@@ -1,0 +1,135 @@
+'use client';
+
+import Link from 'next/link';
+import { useRouter, usePathname } from 'next/navigation';
+import { useState, useEffect } from 'react';
+
+export default function Navbar() {
+  const [user, setUser] = useState<any>(null);
+  const [cartCount, setCartCount] = useState(0);
+  const [isMounted, setIsMounted] = useState(false);
+  const router = useRouter();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    setIsMounted(true);
+    
+    const updateUserAndCart = () => {
+      try {
+        const storedUser = localStorage.getItem('user');
+        setUser(storedUser ? JSON.parse(storedUser) : null);
+
+        const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+        setCartCount(cart.length);
+      } catch (error) {
+        console.error("Veri okunurken hata:", error);
+        setUser(null);
+        setCartCount(0);
+      }
+    };
+    
+    updateUserAndCart();
+
+    window.addEventListener('storage', updateUserAndCart);
+    return () => {
+      window.removeEventListener('storage', updateUserAndCart);
+    };
+  }, [pathname]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    localStorage.removeItem('cart');
+    fetch('/api/auth/logout', { method: 'POST' });
+    setUser(null);
+    setCartCount(0);
+    // Yönlendirme Düzeltmesi: Çıkış yaptıktan sonra kullanıcıyı ana sayfaya yönlendiriyoruz.
+    router.push('/');
+  };
+
+  if (!isMounted) {
+    return (
+      <nav className="navbar navbar-expand-lg navbar-light bg-light">
+        <div className="container">
+          <Link href="/" className="navbar-brand">
+            Teknik Servis
+          </Link>
+        </div>
+      </nav>
+    );
+  }
+
+  return (
+    <nav className="navbar navbar-expand-lg navbar-light bg-light">
+      <div className="container">
+        <Link href="/" className="navbar-brand">
+          Teknik Servis
+        </Link>
+        <button
+          className="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span className="navbar-toggler-icon"></span>
+        </button>
+        <div className="collapse navbar-collapse" id="navbarNav">
+          <ul className="navbar-nav me-auto">
+            <li className="nav-item">
+              <Link href="/products" className="nav-link">
+                Ürünler
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link href="/book-appointment" className="nav-link">
+                Randevu Al
+              </Link>
+            </li>
+             <li className="nav-item">
+              <Link href="/contact" className="nav-link">
+                İletişim
+              </Link>
+            </li>
+          </ul>
+          <ul className="navbar-nav">
+            <li className="nav-item">
+              <Link href="/cart" className="nav-link">
+                <i className="bi bi-cart me-1"></i>
+                Sepet ({cartCount})
+              </Link>
+            </li>
+            {user ? (
+              <>
+                <li className="nav-item">
+                  <Link 
+                    href={user.role === 'admin' ? '/admin' : '/profile'} 
+                    className="nav-link"
+                  >
+                    {user.role === 'admin' ? 'Admin Panel' : 'Profilim'}
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <button onClick={handleLogout} className="nav-link btn btn-link">
+                    Çıkış Yap
+                  </button>
+                </li>
+              </>
+            ) : (
+              <>
+                <li className="nav-item">
+                  <Link href="/login" className="nav-link">
+                    Giriş Yap
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link href="/register" className="nav-link">
+                    Kayıt Ol
+                  </Link>
+                </li>
+              </>
+            )}
+          </ul>
+        </div>
+      </div>
+    </nav>
+  );
+}
