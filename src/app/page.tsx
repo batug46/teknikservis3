@@ -1,15 +1,14 @@
 'use client';
 
-import React, { useState, useEffect } from 'react'; // useEffect'i import ediyoruz
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
 export default function Home() {
   const [heroImgSrc, setHeroImgSrc] = useState('/hero-image.jpg');
-  const [isMounted, setIsMounted] = useState(false); // Hidrasyon hatasını önlemek için eklendi
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    // Bu kod, bileşen tarayıcıya yüklendikten sonra çalışır
     setIsMounted(true);
   }, []);
 
@@ -29,8 +28,7 @@ export default function Home() {
                 <Link href="/products" className="btn btn-outline-light btn-lg">Ürünleri İncele</Link>
               </div>
             </div>
-            <div className="col-lg-6" style={{ minHeight: '480px' }}> {/* Yüklenirken kaymayı önlemek için min-height */}
-              {/* Hidrasyon hatasını önlemek için resmi sadece sayfa yüklendikten sonra render ediyoruz */}
+            <div className="col-lg-6" style={{ minHeight: '480px' }}>
               {isMounted && (
                 <Image 
                   src={heroImgSrc} 
@@ -40,8 +38,8 @@ export default function Home() {
                   className="img-fluid rounded shadow" 
                   priority
                   onError={() => {
-                    // Eğer /hero-image.jpg yüklenemezse, kaynağı placeholder ile değiştir.
-                    setHeroImgSrc('https://placehold.co/720x480/343A40/FFF?text=Teknik+Servis');
+                    // DÜZELTME: .png uzantısı eklendi
+                    setHeroImgSrc('https://placehold.co/720x480.png/343A40/FFF?text=Teknik+Servis');
                   }}
                 />
               )}
@@ -49,9 +47,7 @@ export default function Home() {
           </div>
         </div>
       </div>
-
       {/* ... sayfanın geri kalan kısımları aynı kalabilir ... */}
-      
     </div>
   );
 }

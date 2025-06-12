@@ -1,140 +1,28 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import jwt from 'jsonwebtoken';
+import prisma from '../../../../lib/prisma';
+import { verifyAuth } from '../../../../lib/auth';
 
-const prisma = new PrismaClient();
-// .env dosyasından okunan değeri kullan, yoksa bir varsayılan belirle (ama .env kullanmalısın)
-const JWT_SECRET = process.env.JWT_SECRET || 'SENIN_COK_GUCLU_VE_OZEL_ANAHTARIN_BURAYA';
-
-// Diğer kodlar aynı kalacak
-// ...
-
-// Yardımcı Fonksiyon: Token'ı doğrulayan ve admin yetkisini kontrol eden fonksiyon
-async function verifyAdmin(request) {
-  try {
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return { error: 'Yetkilendirme token\'ı bulunamadı veya formatı yanlış.', status: 401 };
-    }
-
-    const token = authHeader.split(' ')[1];
-    const decoded = jwt.verify(token, JWT_SECRET);
-    
-    if (decoded.role !== 'admin') {
-      return { error: 'Yetkisiz erişim. Sadece adminler bu işlemi yapabilir.', status: 403 };
-    }
-
-    return { user: decoded };
-  } catch (err) {
-    if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
-      return { error: 'Geçersiz veya süresi dolmuş token.', status: 401 };
-    }
-    console.error("Token doğrulama hatası:", err);
-    return { error: 'Sunucu hatası.', status: 500 };
-  }
-}
-
-/**
- * @description Tüm siparişleri getirir (Sadece adminler için).
- * GET /api/admin/orders
- */
 export async function GET(request) {
-  const authResult = await verifyAdmin(request);
-  if (authResult.error) {
-    return NextResponse.json({ error: authResult.error }, { status: authResult.status });
-  }
-
   try {
+    // Sadece adminlerin bu API'ye erişebildiğinden emin oluyoruz (middleware'de de kontrol ediliyor ama burada da yapmak iyi bir pratiktir)
+    const userPayload = await verifyAuth(request);
+    if (!userPayload || userPayload.role !== 'admin') {
+      return NextResponse.json({ error: 'Yetkisiz erişim.' }, { status: 403 });
+    }
+
     const orders = await prisma.order.findMany({
-      orderBy: {
-        createdAt: 'desc',
-      },
+      orderBy: { createdAt: 'desc' },
       include: {
+        // Siparişi veren kullanıcının adını da getirmek için
         user: {
-          select: {
-            name: true,
-            email: true,
-            adSoyad: true,
-            phone: true,
-          },
-        },
-        items: { // Sipariş kalemlerini (OrderItem) dahil et
-          include: {
-            product: { // Her sipariş kalemindeki ürünü de dahil et
-              select: {
-                name: true,
-                price: true,
-                imageUrl: true,
-              },
-            },
-          },
+          select: { name: true },
         },
       },
     });
+
     return NextResponse.json(orders);
   } catch (error) {
-    console.error('Siparişler getirilirken hata:', error);
-    return NextResponse.json({ error: 'Siparişler getirilirken bir sunucu hatası oluştu.' }, { status: 500 });
-  }
-}
-
-/**
- * @description Bir siparişin durumunu günceller (Sadece adminler için).
- * PUT /api/admin/orders
- */
-export async function PUT(request) {
-  const authResult = await verifyAdmin(request);
-  if (authResult.error) {
-    return NextResponse.json({ error: authResult.error }, { status: authResult.status });
-  }
-  
-  try {
-    const { id, status } = await request.json();
-
-    if (!id || !status) {
-      return NextResponse.json({ error: 'Sipariş ID ve yeni durum bilgisi gereklidir.' }, { status: 400 });
-    }
-
-    const updatedOrder = await prisma.order.update({
-      where: { id: parseInt(id) },
-      data: { status: status },
-    });
-
-    return NextResponse.json(updatedOrder);
-  } catch (error) {
-    console.error('Sipariş durumu güncellenirken hata:', error);
-    return NextResponse.json({ error: 'Sipariş durumu güncellenirken bir sunucu hatası oluştu.' }, { status: 500 });
-  }
-}
-
-/**
- * @description Bir siparişi siler (Sadece adminler için).
- * DELETE /api/admin/orders?id=<order_id>
- */
-export async function DELETE(request) {
-  const authResult = await verifyAdmin(request);
-  if (authResult.error) {
-    return NextResponse.json({ error: authResult.error }, { status: authResult.status });
-  }
-
-  try {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-
-    if (!id) {
-      return NextResponse.json({ error: 'Silinecek siparişin ID bilgisi gereklidir.' }, { status: 400 });
-    }
-    
-    // Siparişe ait kalemleri de silmeniz gerekebilir.
-    // await prisma.orderItem.deleteMany({ where: { orderId: parseInt(id) } });
-
-    await prisma.order.delete({
-      where: { id: parseInt(id) },
-    });
-
-    return NextResponse.json({ message: 'Sipariş başarıyla silindi.' });
-  } catch (error) {
-    console.error('Sipariş silinirken hata:', error);
-    return NextResponse.json({ error: 'Sipariş silinirken bir sunucu hatası oluştu.' }, { status: 500 });
+    console.error('Admin siparişleri getirme hatası:', error);
+    return NextResponse.json({ error: 'Sunucu hatası' }, { status: 500 });
   }
 }

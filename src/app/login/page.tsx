@@ -24,20 +24,17 @@ export default function LoginPage() {
       });
 
       const data = await res.json();
-
       if (!res.ok) {
         throw new Error(data.error || 'Giriş işlemi başarısız oldu.');
       }
 
-      // *** EN ÖNEMLİ ADIM BURASI ***
-      // Başarılı giriş sonrası kullanıcı bilgilerini localStorage'a kaydediyoruz.
-      // Navbar bu bilgiyi buradan okuyacak.
+      // Kullanıcı bilgisini tarayıcıya kaydet
       localStorage.setItem('user', JSON.stringify(data.user));
+      // Navbar'ı güncellemesi için haber ver
+      window.dispatchEvent(new Event('authChange'));
 
-      // Giriş başarılı, kullanıcıyı yönlendir.
-      // Admin ise admin paneline, normal kullanıcı ise ana sayfaya yönlendirilir.
-      const redirectUrl = data.user?.role === 'admin' ? '/admin' : '/';
-      router.push(redirectUrl);
+      // Kullanıcıyı ana sayfaya yönlendir
+      router.push('/');
       
     } catch (err: any) {
       setError(err.message);
@@ -53,13 +50,7 @@ export default function LoginPage() {
           <div className="card">
             <div className="card-body p-4">
               <h2 className="text-center mb-4">Giriş Yap</h2>
-              
-              {error && (
-                <div className="alert alert-danger" role="alert">
-                  {error}
-                </div>
-              )}
-
+              {error && <div className="alert alert-danger">{error}</div>}
               <form onSubmit={handleSubmit}>
                 <div className="mb-3">
                   <label htmlFor="email" className="form-label">E-posta</label>
@@ -70,7 +61,6 @@ export default function LoginPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    disabled={loading}
                   />
                 </div>
                 <div className="mb-3">
@@ -82,7 +72,6 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    disabled={loading}
                   />
                 </div>
                 <div className="d-grid mt-4">

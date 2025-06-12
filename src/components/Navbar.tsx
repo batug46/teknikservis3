@@ -9,12 +9,12 @@ export default function Navbar() {
   const [cartCount, setCartCount] = useState(0);
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
-  const pathname = usePathname();
 
   useEffect(() => {
     setIsMounted(true);
     
-    const updateUserAndCart = () => {
+    // Bu fonksiyon, localStorage'dan veriyi okuyup state'i günceller.
+    const handleAuthStateChange = () => {
       try {
         const storedUser = localStorage.getItem('user');
         setUser(storedUser ? JSON.parse(storedUser) : null);
@@ -28,20 +28,30 @@ export default function Navbar() {
       }
     };
     
-    updateUserAndCart();
+    // Sayfa ilk yüklendiğinde ve diğer sekmelerde bir değişiklik olduğunda çalışır.
+    window.addEventListener('storage', handleAuthStateChange);
+    // Giriş/Çıkış gibi olaylardan sonra tetiklenecek özel event'imizi dinler.
+    window.addEventListener('authChange', handleAuthStateChange);
 
-    window.addEventListener('storage', updateUserAndCart);
+    // Bileşen ilk yüklendiğinde durumu kontrol et.
+    handleAuthStateChange();
+
+    // Listener'ları temizle
     return () => {
-      window.removeEventListener('storage', updateUserAndCart);
+      window.removeEventListener('storage', handleAuthStateChange);
+      window.removeEventListener('authChange', handleAuthStateChange);
     };
-  }, [pathname]);
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('user');
     localStorage.removeItem('cart');
     fetch('/api/auth/logout', { method: 'POST' });
+    
+    // Çıkış yapıldığında authChange event'ini tetikle, böylece navbar anında güncellenir.
+    window.dispatchEvent(new Event('authChange'));
+    
     router.push('/');
-    router.refresh();
   };
 
   if (!isMounted) {
@@ -97,8 +107,6 @@ export default function Navbar() {
             </li>
             {user ? (
               <>
-                {/* --- YENİ EKLENEN BÖLÜM --- */}
-                {/* Eğer kullanıcı admin ise, Admin Paneli linkini göster */}
                 {user.role === 'admin' && (
                   <li className="nav-item">
                     <Link href="/admin" className="nav-link fw-bold text-danger">

@@ -1,4 +1,5 @@
 'use client';
+
 import { useState } from 'react';
 
 export default function AdminLoginPage() {
@@ -19,8 +20,16 @@ export default function AdminLoginPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      if (data.user?.role !== 'admin') throw new Error('Sadece adminler giriş yapabilir.');
+      if (data.user?.role !== 'admin') throw new Error('Bu panele sadece adminler giriş yapabilir.');
+      
+      // Kullanıcı bilgisini tarayıcıya kaydet
+      localStorage.setItem('user', JSON.stringify(data.user));
+      // Navbar'ı güncellemesi için haber ver
+      window.dispatchEvent(new Event('authChange'));
+      
+      // Admin paneline yönlendir
       window.location.href = '/admin';
+
     } catch (err: any) {
       setError(err.message);
     } finally {
