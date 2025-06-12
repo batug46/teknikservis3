@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import React from 'react';
+import AdminLogoutButton from '../../../components/AdminLogoutButton'; // Butonu import et
 
 export default function ProtectedAdminLayout({
   children,
@@ -10,7 +11,8 @@ export default function ProtectedAdminLayout({
     <div className="container-fluid">
       <div className="row">
         <div className="col-md-3 col-lg-2 d-md-block bg-dark sidebar collapse vh-100">
-          <div className="position-sticky pt-3">
+          <div className="position-sticky pt-3 d-flex flex-column h-100">
+            {/* Üst Menü Linkleri */}
             <ul className="nav flex-column">
               <li className="nav-item">
                 <Link className="nav-link text-white" href="/admin">
@@ -35,6 +37,13 @@ export default function ProtectedAdminLayout({
                   <i className="bi bi-calendar me-2"></i>
                   Randevular
                 </Link>
+              </li>
+            </ul>
+
+            {/* Alt Çıkış Butonu */}
+            <ul className="nav flex-column mt-auto mb-3">
+              <li className="nav-item">
+                <AdminLogoutButton />
               </li>
             </ul>
           </div>

@@ -40,10 +40,8 @@ export default function Navbar() {
     localStorage.removeItem('user');
     localStorage.removeItem('cart');
     fetch('/api/auth/logout', { method: 'POST' });
-    setUser(null);
-    setCartCount(0);
-    // Yönlendirme Düzeltmesi: Çıkış yaptıktan sonra kullanıcıyı ana sayfaya yönlendiriyoruz.
     router.push('/');
+    router.refresh();
   };
 
   if (!isMounted) {
@@ -99,12 +97,18 @@ export default function Navbar() {
             </li>
             {user ? (
               <>
+                {/* --- YENİ EKLENEN BÖLÜM --- */}
+                {/* Eğer kullanıcı admin ise, Admin Paneli linkini göster */}
+                {user.role === 'admin' && (
+                  <li className="nav-item">
+                    <Link href="/admin" className="nav-link fw-bold text-danger">
+                      Admin Paneli
+                    </Link>
+                  </li>
+                )}
                 <li className="nav-item">
-                  <Link 
-                    href={user.role === 'admin' ? '/admin' : '/profile'} 
-                    className="nav-link"
-                  >
-                    {user.role === 'admin' ? 'Admin Panel' : 'Profilim'}
+                  <Link href="/profile" className="nav-link">
+                    Profilim
                   </Link>
                 </li>
                 <li className="nav-item">
