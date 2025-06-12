@@ -1,3 +1,4 @@
+// src/app/api/admin/appointments/route.js
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import jwt from 'jsonwebtoken';
@@ -35,8 +36,8 @@ async function verifyAdmin(request) {
 }
 
 /**
- * @description Tüm siparişleri getirir (Sadece adminler için).
- * GET /api/admin/orders
+ * @description Tüm randevuları getirir (Sadece adminler için).
+ * GET /api/admin/appointments
  */
 export async function GET(request) {
   const authResult = await verifyAdmin(request);
@@ -45,12 +46,12 @@ export async function GET(request) {
   }
 
   try {
-    const orders = await prisma.order.findMany({
+    const appointments = await prisma.appointment.findMany({
       orderBy: {
         createdAt: 'desc',
       },
       include: {
-        user: {
+        user: { // Randevuyu alan kullanıcı bilgilerini dahil et
           select: {
             name: true,
             email: true,
@@ -58,29 +59,18 @@ export async function GET(request) {
             phone: true,
           },
         },
-        items: { // Sipariş kalemlerini (OrderItem) dahil et
-          include: {
-            product: { // Her sipariş kalemindeki ürünü de dahil et
-              select: {
-                name: true,
-                price: true,
-                imageUrl: true,
-              },
-            },
-          },
-        },
       },
     });
-    return NextResponse.json(orders);
+    return NextResponse.json(appointments);
   } catch (error) {
-    console.error('Siparişler getirilirken hata:', error);
-    return NextResponse.json({ error: 'Siparişler getirilirken bir sunucu hatası oluştu.' }, { status: 500 });
+    console.error('Randevular getirilirken hata:', error);
+    return NextResponse.json({ error: 'Randevular getirilirken bir sunucu hatası oluştu.' }, { status: 500 });
   }
 }
 
 /**
- * @description Bir siparişin durumunu günceller (Sadece adminler için).
- * PUT /api/admin/orders
+ * @description Bir randevunun durumunu günceller (Sadece adminler için).
+ * PUT /api/admin/appointments
  */
 export async function PUT(request) {
   const authResult = await verifyAdmin(request);
@@ -92,24 +82,24 @@ export async function PUT(request) {
     const { id, status } = await request.json();
 
     if (!id || !status) {
-      return NextResponse.json({ error: 'Sipariş ID ve yeni durum bilgisi gereklidir.' }, { status: 400 });
+      return NextResponse.json({ error: 'Randevu ID ve yeni durum bilgisi gereklidir.' }, { status: 400 });
     }
 
-    const updatedOrder = await prisma.order.update({
+    const updatedAppointment = await prisma.appointment.update({
       where: { id: parseInt(id) },
       data: { status: status },
     });
 
-    return NextResponse.json(updatedOrder);
+    return NextResponse.json(updatedAppointment);
   } catch (error) {
-    console.error('Sipariş durumu güncellenirken hata:', error);
-    return NextResponse.json({ error: 'Sipariş durumu güncellenirken bir sunucu hatası oluştu.' }, { status: 500 });
+    console.error('Randevu durumu güncellenirken hata:', error);
+    return NextResponse.json({ error: 'Randevu durumu güncellenirken bir sunucu hatası oluştu.' }, { status: 500 });
   }
 }
 
 /**
- * @description Bir siparişi siler (Sadece adminler için).
- * DELETE /api/admin/orders?id=<order_id>
+ * @description Bir randevuyu siler (Sadece adminler için).
+ * DELETE /api/admin/appointments?id=<randevu_id>
  */
 export async function DELETE(request) {
   const authResult = await verifyAdmin(request);
@@ -122,19 +112,16 @@ export async function DELETE(request) {
     const id = searchParams.get('id');
 
     if (!id) {
-      return NextResponse.json({ error: 'Silinecek siparişin ID bilgisi gereklidir.' }, { status: 400 });
+      return NextResponse.json({ error: 'Silinecek randevunun ID bilgisi gereklidir.' }, { status: 400 });
     }
     
-    // Siparişe ait kalemleri de silmeniz gerekebilir.
-    // await prisma.orderItem.deleteMany({ where: { orderId: parseInt(id) } });
-
-    await prisma.order.delete({
+    await prisma.appointment.delete({
       where: { id: parseInt(id) },
     });
 
-    return NextResponse.json({ message: 'Sipariş başarıyla silindi.' });
+    return NextResponse.json({ message: 'Randevu başarıyla silindi.' });
   } catch (error) {
-    console.error('Sipariş silinirken hata:', error);
-    return NextResponse.json({ error: 'Sipariş silinirken bir sunucu hatası oluştu.' }, { status: 500 });
+    console.error('Randevu silinirken hata:', error);
+    return NextResponse.json({ error: 'Randevu silinirken bir sunucu hatası oluştu.' }, { status: 500 });
   }
 }
