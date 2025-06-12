@@ -1,53 +1,25 @@
-import jwt from 'jsonwebtoken';
+import { jwtVerify } from 'jose';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'SENIN_COK_GUCLU_VE_OZEL_ANAHTARIN_BURAYA';
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.JWT_SECRET || 'your-super-secret-key-that-is-long-enough'
+);
 
-export async function verifyAuth(reqOrToken) {
+/**
+ * Gelen isteğin çerezindeki 'token'ı doğrular ve kullanıcı bilgilerini döndürür.
+ * Edge Runtime ile uyumludur.
+ */
+export async function verifyAuth(request) {
+  const token = request.cookies.get('token')?.value;
+
+  if (!token) {
+    return null;
+  }
+
   try {
-    let token;
-    if (typeof reqOrToken === 'string') {
-      token = reqOrToken;
-    } else {
-      token = reqOrToken.headers.get('authorization')?.split(' ')[1];
-    }
-    
-    if (!token) return null;
-    const decoded = jwt.verify(token, JWT_SECRET);
-    return decoded;
-  } catch (error) {
+    const { payload } = await jwtVerify(token, JWT_SECRET);
+    return payload;
+  } catch (err) {
+    console.error("Token doğrulama hatası (jose):", err.message);
     return null;
   }
 }
-
-export function verifyCredentials(email, password) {
-  // Sabit admin bilgileri
-  const adminEmail = 'admin@example.com';
-  const adminPassword = 'admin123';
-
-  if (email === adminEmail && password === adminPassword) {
-    return {
-      id: 1,
-      email: adminEmail,
-      role: 'admin',
-      name: 'Admin',
-      adSoyad: 'Admin User'
-    };
-  }
-  return null;
-}
-
-export const generateToken = (user) => {
-  return jwt.sign(
-    {
-      userId: user.id,
-      email: user.email,
-      role: user.role
-    },
-    JWT_SECRET,
-    { expiresIn: '24h' }
-  );
-};
-
-export const isAdmin = (user) => {
-  return user?.role === 'admin';
-}; 

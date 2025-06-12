@@ -1,60 +1,59 @@
-// src/app/api/auth/login/route.js
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../../../../lib/prisma';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import { SignJWT } from 'jose';
 
-const prisma = new PrismaClient();
-const JWT_SECRET = process.env.JWT_SECRET || 'SENIN_COK_GUCLU_VE_OZEL_ANAHTARIN_BURAYA'; // .env dosyanızdaki ile aynı olduğundan emin olun
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.JWT_SECRET || 'your-super-secret-key-that-is-long-enough'
+);
 
-/**
- * @description Kullanıcı girişi yapar ve JWT token döndürür.
- * POST /api/auth/login
- */
 export async function POST(request) {
   try {
     const { email, password } = await request.json();
-
     if (!email || !password) {
-      return NextResponse.json({ error: 'E-posta ve şifre gereklidir.' }, { status: 400 });
+      return NextResponse.json({ error: 'E-posta ve şifre zorunludur.' }, { status: 400 });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email },
-    });
-
-    if (!user || !bcrypt.compareSync(password, user.password)) {
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
       return NextResponse.json({ error: 'Geçersiz e-posta veya şifre.' }, { status: 401 });
     }
 
-    // Token oluştur
-    const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role },
-      JWT_SECRET,
-      { expiresIn: '1d' } // Token 1 gün geçerli olacak
-    );
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return NextResponse.json({ error: 'Geçersiz e-posta veya şifre.' }, { status: 401 });
+    }
 
-    // Kullanıcı bilgilerini şifresiz olarak ayıkla (frontend için)
+    const token = await new SignJWT({
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setIssuedAt()
+      .setExpirationTime('1d')
+      .sign(JWT_SECRET);
+
     const { password: _, ...userWithoutPassword } = user;
-
-    // Token'ı HTTP-only cookie olarak ayarla
+    
     const response = NextResponse.json({
-      message: 'Giriş başarılı.',
-      user: userWithoutPassword, // Kullanıcı bilgisi frontend'e gönderiliyor
+      message: 'Giriş başarılı!',
+      user: userWithoutPassword,
     });
 
-    response.cookies.set('token', token, {
-      httpOnly: true, // JavaScript erişemez
-      secure: process.env.NODE_ENV === 'production', // HTTPS'te çalışır
-      maxAge: 60 * 60 * 24, // 1 gün (saniye cinsinden)
-      path: '/', // Tüm domain için geçerli
-      sameSite: 'lax', // CSRF koruması için
+    response.cookies.set({
+      name: 'token',
+      value: token,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      path: '/',
+      maxAge: 60 * 60 * 24,
     });
 
     return response;
-
   } catch (error) {
-    console.error('Giriş yapılırken hata:', error);
-    return NextResponse.json({ error: 'Giriş yapılırken bir sunucu hatası oluştu.' }, { status: 500 });
+    console.error('Giriş API Hatası:', error);
+    return NextResponse.json({ error: 'Sunucu hatası.' }, { status: 500 });
   }
 }
