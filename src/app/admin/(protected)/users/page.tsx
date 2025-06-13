@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, FormEvent } from 'react';
 
+// Tipleri tanımlayalım
 interface User {
   id: number;
   name: string;
@@ -14,10 +15,12 @@ export default function AdminUsersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Yeni kullanıcı ekleme modal'ı için state'ler
   const [showModal, setShowModal] = useState(false);
   const [newUser, setNewUser] = useState({ name: '', email: '', password: '', role: 'user' });
   const [modalError, setModalError] = useState('');
 
+  // Kullanıcıları API'den çeken fonksiyon
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -37,6 +40,7 @@ export default function AdminUsersPage() {
     fetchUsers();
   }, [fetchUsers]);
 
+  // Rol değiştirme fonksiyonu
   const handleRoleChange = async (userId: number, newRole: string) => {
     try {
       const res = await fetch(`/api/admin/users/${userId}`, {
@@ -45,25 +49,27 @@ export default function AdminUsersPage() {
         body: JSON.stringify({ role: newRole }),
       });
       if (!res.ok) throw new Error("Rol değiştirilemedi.");
-      fetchUsers();
+      fetchUsers(); // Başarılı olursa listeyi yenile
     } catch (err: any) {
       alert(err.message);
     }
   };
 
+  // Kullanıcı silme fonksiyonu
   const handleDelete = async (userId: number) => {
     if (window.confirm('Bu kullanıcıyı silmek istediğinizden emin misiniz?')) {
       try {
         const res = await fetch(`/api/admin/users/${userId}`, { method: 'DELETE' });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Kullanıcı silinemedi.");
-        fetchUsers();
+        fetchUsers(); // Başarılı olursa listeyi yenile
       } catch (err: any) {
         alert(err.message);
       }
     }
   };
 
+  // Yeni kullanıcı oluşturma fonksiyonu
   const handleCreateUser = async (e: FormEvent) => {
     e.preventDefault();
     setModalError('');

@@ -1,51 +1,26 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../../../lib/prisma'; // DÜZELTİLMİŞ YOL
 
-const prisma = new PrismaClient();
-
-/**
- * @description İletişim formundan yeni bir mesaj oluşturur.
- * POST /api/contact
- */
 export async function POST(request) {
   try {
-    const body = await request.json();
-    const { name, email, message, subject } = body; // 'subject' de formda vardı, onu da ekleyelim.
+    const { name, email, subject, message } = await request.json();
 
-    // 1. Gelen veriyi doğrula
-    if (!name || !email || !message || !subject) {
-      return NextResponse.json(
-        { error: 'Tüm alanların doldurulması zorunludur.' },
-        { status: 400 }
-      );
+    if (!name || !email || !message) {
+      return NextResponse.json({ error: 'Tüm zorunlu alanlar doldurulmalıdır.' }, { status: 400 });
     }
-
-    // 2. Prisma kullanarak mesajı veritabanına kaydet
-    const newMessage = await prisma.message.create({
+    
+    await prisma.message.create({
       data: {
         name,
         email,
         message,
-        // subject alanı schema'da yok, ama eklemek iyi olabilir. 
-        // Şimdilik schema'daki alanları kullanıyoruz.
-        // subject: subject,
+        status: 'unread',
       },
     });
 
-    // 3. Başarılı olduğuna dair bir cevap döndür
-    return NextResponse.json(
-      { 
-        message: 'Mesajınız başarıyla gönderildi!',
-        data: newMessage 
-      },
-      { status: 201 } // 201 Created
-    );
-
+    return NextResponse.json({ message: 'Mesaj başarıyla oluşturuldu' }, { status: 201 });
   } catch (error) {
-    console.error('İletişim Formu API Hatası:', error);
-    return NextResponse.json(
-      { error: 'Mesaj gönderilirken bir sunucu hatası oluştu.' },
-      { status: 500 }
-    );
+    console.error("İletişim formu API hatası:", error);
+    return NextResponse.json({ error: 'Sunucu hatası.' }, { status: 500 });
   }
 }

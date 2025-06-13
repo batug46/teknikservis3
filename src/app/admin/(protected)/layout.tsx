@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import React from 'react';
-import AdminLogoutButton from '../../../components/AdminLogoutButton'; // Butonu import et
 
 export default function ProtectedAdminLayout({
   children,
@@ -12,38 +11,31 @@ export default function ProtectedAdminLayout({
       <div className="row">
         <div className="col-md-3 col-lg-2 d-md-block bg-dark sidebar collapse vh-100">
           <div className="position-sticky pt-3 d-flex flex-column h-100">
-            {/* Üst Menü Linkleri */}
             <ul className="nav flex-column">
               <li className="nav-item">
                 <Link className="nav-link text-white" href="/admin">
-                  <i className="bi bi-house-door me-2"></i>
-                  Dashboard
+                  <i className="bi bi-house-door me-2"></i>Dashboard
                 </Link>
               </li>
               <li className="nav-item">
                 <Link className="nav-link text-white" href="/admin/users">
-                  <i className="bi bi-people me-2"></i>
-                  Kullanıcılar
+                  <i className="bi bi-people me-2"></i>Kullanıcılar
                 </Link>
               </li>
               <li className="nav-item">
                 <Link className="nav-link text-white" href="/admin/orders">
-                  <i className="bi bi-receipt me-2"></i>
-                  Siparişler
+                  <i className="bi bi-receipt me-2"></i>Siparişler
                 </Link>
               </li>
-               <li className="nav-item">
-                <Link className="nav-link text-white" href="/admin/appointments">
-                  <i className="bi bi-calendar me-2"></i>
-                  Randevular
-                </Link>
-              </li>
-            </ul>
-
-            {/* Alt Çıkış Butonu */}
-            <ul className="nav flex-column mt-auto mb-3">
               <li className="nav-item">
-                <AdminLogoutButton />
+                <Link className="nav-link text-white" href="/admin/appointments">
+                  <i className="bi bi-calendar me-2"></i>Randevular
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link className="nav-link text-white" href="/admin/contact">
+                  <i className="bi bi-envelope me-2"></i>Mesajlar
+                </Link>
               </li>
             </ul>
           </div>

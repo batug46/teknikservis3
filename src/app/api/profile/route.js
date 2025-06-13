@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '../../../lib/prisma'; // DÜZELTİLMİŞ YOL
 import { verifyAuth } from '../../../lib/auth'; // DÜZELTİLMİŞ YOL
-import bcrypt from 'bcryptjs';
 
 export async function PUT(request) {
   try {
@@ -10,32 +9,25 @@ export async function PUT(request) {
       return NextResponse.json({ error: 'Yetkisiz erişim.' }, { status: 401 });
     }
 
-    const { name, phone, currentPassword, newPassword } = await request.json();
+    const { name, email, phone } = await request.json();
     
-    const updateData = {
-      name: name,
-      adSoyad: name,
-      phone: phone,
-    };
-
-    // Eğer kullanıcı şifre değiştirmek istiyorsa...
-    if (newPassword && currentPassword) {
-      const user = await prisma.user.findUnique({ where: { id: userPayload.id } });
-      if (!user) {
-        return NextResponse.json({ error: 'Kullanıcı bulunamadı.' }, { status: 404 });
-      }
-
-      const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
-      if (!isPasswordValid) {
-        return NextResponse.json({ error: 'Mevcut şifreniz yanlış.' }, { status: 400 });
-      }
-
-      updateData.password = await bcrypt.hash(newPassword, 10);
+    // Eğer email değiştiriliyorsa, yeni email'in başka bir kullanıcı tarafından
+    // kullanılıp kullanılmadığını kontrol et.
+    if (email && email !== userPayload.email) {
+        const existingUser = await prisma.user.findUnique({ where: { email } });
+        if (existingUser) {
+            return NextResponse.json({ error: 'Bu e-posta adresi zaten kullanımda.' }, { status: 400 });
+        }
     }
 
     const updatedUser = await prisma.user.update({
       where: { id: userPayload.id },
-      data: updateData,
+      data: {
+        name: name,
+        adSoyad: name,
+        email: email,
+        phone: phone, // Telefonu güncelle
+      },
     });
 
     const { password: _, ...userWithoutPassword } = updatedUser;
@@ -45,7 +37,6 @@ export async function PUT(request) {
       user: userWithoutPassword 
     });
   } catch (error) {
-    console.error("Profil Güncelleme API Hatası:", error);
     return NextResponse.json({ error: 'Güncelleme başarısız.' }, { status: 500 });
   }
 }

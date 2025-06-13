@@ -1,29 +1,66 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
 
 export default function ContactPage() {
+  const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
+  const [status, setStatus] = useState({ type: '', text: '' });
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setStatus({ type: '', text: '' });
+
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Mesaj gönderilemedi.');
+      
+      setStatus({ type: 'success', text: 'Mesajınız başarıyla gönderildi!' });
+      setFormData({ name: '', email: '', subject: '', message: '' }); // Formu temizle
+    } catch (err: any) {
+      setStatus({ type: 'danger', text: err.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="container my-5">
       <div className="row">
         <div className="col-md-6">
           <h2 className="mb-4">İletişim Formu</h2>
-          <form>
+          <form onSubmit={handleSubmit}>
+            {status.text && <div className={`alert alert-${status.type}`}>{status.text}</div>}
             <div className="mb-3">
               <label htmlFor="name" className="form-label">Adınız Soyadınız</label>
-              <input type="text" className="form-control" id="name" required />
+              <input type="text" className="form-control" id="name" value={formData.name} onChange={handleChange} required />
             </div>
             <div className="mb-3">
               <label htmlFor="email" className="form-label">E-posta Adresiniz</label>
-              <input type="email" className="form-control" id="email" required />
+              <input type="email" className="form-control" id="email" value={formData.email} onChange={handleChange} required />
             </div>
             <div className="mb-3">
               <label htmlFor="subject" className="form-label">Konu</label>
-              <input type="text" className="form-control" id="subject" required />
+              <input type="text" className="form-control" id="subject" value={formData.subject} onChange={handleChange} required />
             </div>
             <div className="mb-3">
               <label htmlFor="message" className="form-label">Mesajınız</label>
-              <textarea className="form-control" id="message" rows={5} required></textarea>
+              <textarea className="form-control" id="message" rows={5} value={formData.message} onChange={handleChange} required></textarea>
             </div>
-            <button type="submit" className="btn btn-primary">Gönder</button>
+            <button type="submit" className="btn btn-primary" disabled={loading}>
+              {loading ? 'Gönderiliyor...' : 'Gönder'}
+            </button>
           </form>
         </div>
         
@@ -53,32 +90,11 @@ export default function ContactPage() {
                 Hafta içi: 09:00 - 18:00
                 <br />
                 Cumartesi: 10:00 - 16:00
-                <br />
-                Pazar: Kapalı
               </p>
-            </div>
-          </div>
-
-          {/* Sosyal Medya */}
-          <div className="mt-4">
-            <h5>Sosyal Medya</h5>
-            <div className="d-flex gap-3 mt-3">
-              <a href="#" className="text-dark fs-4">
-                <i className="bi bi-facebook"></i>
-              </a>
-              <a href="#" className="text-dark fs-4">
-                <i className="bi bi-twitter"></i>
-              </a>
-              <a href="#" className="text-dark fs-4">
-                <i className="bi bi-instagram"></i>
-              </a>
-              <a href="#" className="text-dark fs-4">
-                <i className="bi bi-linkedin"></i>
-              </a>
             </div>
           </div>
         </div>
       </div>
     </div>
   );
-} 
+}
