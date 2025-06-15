@@ -1,11 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function BookAppointmentPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [formData, setFormData] = useState({
-    serviceType: '',
+    // URL'den gelen 'service' parametresini oku ve başlangıç değeri olarak ata
+    serviceType: searchParams.get('service') || '',
     description: '',
     date: '',
     time: '',
@@ -13,7 +17,6 @@ export default function BookAppointmentPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -26,7 +29,6 @@ export default function BookAppointmentPage() {
     setLoading(true);
 
     try {
-      // Bu API rotasını bir sonraki adımda oluşturacağız.
       const res = await fetch('/api/appointments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -34,20 +36,16 @@ export default function BookAppointmentPage() {
       });
 
       const data = await res.json();
-
       if (!res.ok) {
-        // Eğer kullanıcı giriş yapmamışsa (401 Unauthorized), giriş sayfasına yönlendir.
         if (res.status === 401) {
           router.push('/login?redirect=/book-appointment');
           return;
         }
-        throw new Error(data.error || 'Randevu oluşturulurken bir hata oluştu.');
+        throw new Error(data.error || 'Randevu oluşturulamadı.');
       }
       
-      setSuccess('Randevunuz başarıyla oluşturuldu! Bilgilendirme için sizinle iletişime geçeceğiz.');
-      // Formu temizle
+      setSuccess('Randevunuz başarıyla oluşturuldu!');
       setFormData({ serviceType: '', description: '', date: '', time: '' });
-
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -69,14 +67,14 @@ export default function BookAppointmentPage() {
                   <label htmlFor="serviceType" className="form-label">Servis Tipi</label>
                   <select className="form-select" id="serviceType" value={formData.serviceType} onChange={handleChange} required>
                     <option value="">Seçiniz...</option>
-                    <option value="Bilgisayar Tamiri">Bilgisayar Tamiri</option>
-                    <option value="Telefon Tamiri">Telefon Tamiri</option>
-                    <option value="Kamera Kurulumu">Kamera Kurulumu</option>
+                    <option value="Kamera Sistemi Kurulum ve Tamiri">Kamera Sistemi Kurulum ve Tamiri</option>
+                    <option value="Bilgisayar Donanım Tamiri">Bilgisayar Donanım Tamiri</option>
+                    <option value="Akıllı Telefon Ekran Değişimi">Akıllı Telefon Ekran Değişimi</option>
                   </select>
                 </div>
                 <div className="mb-3">
                   <label htmlFor="description" className="form-label">Sorun Açıklaması</label>
-                  <textarea className="form-control" id="description" rows={4} value={formData.description} onChange={handleChange} placeholder="Yaşadığınız sorunu kısaca açıklayın." required></textarea>
+                  <textarea className="form-control" id="description" rows={4} value={formData.description} onChange={handleChange} required></textarea>
                 </div>
                 <div className="row mb-3">
                   <div className="col-md-6">
@@ -85,13 +83,17 @@ export default function BookAppointmentPage() {
                   </div>
                   <div className="col-md-6">
                     <label htmlFor="time" className="form-label">Randevu Saati</label>
+                    {/* Saat seçenekleri artırıldı */}
                     <select className="form-select" id="time" value={formData.time} onChange={handleChange} required>
-                      <option value="">Seçiniz...</option>
-                      <option value="09:00">09:00</option>
-                      <option value="10:00">10:00</option>
-                      <option value="11:00">11:00</option>
-                      <option value="13:00">13:00</option>
-                      <option value="14:00">14:00</option>
+                       <option value="">Seçiniz...</option>
+                       <option value="09:00">09:00</option>
+                       <option value="10:00">10:00</option>
+                       <option value="11:00">11:00</option>
+                       <option value="12:00">12:00</option>
+                       <option value="14:00">14:00</option>
+                       <option value="15:00">15:00</option>
+                       <option value="16:00">16:00</option>
+                       <option value="17:00">17:00</option>
                     </select>
                   </div>
                 </div>

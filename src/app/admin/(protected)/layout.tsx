@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import React from 'react';
+import AdminLogoutButton from '../../../components/AdminLogoutButton';
 
 export default function ProtectedAdminLayout({
   children,
@@ -37,6 +38,20 @@ export default function ProtectedAdminLayout({
                   <i className="bi bi-envelope me-2"></i>Mesajlar
                 </Link>
               </li>
+              <li className="nav-item">
+                <Link className="nav-link text-white" href="/admin/slider">
+                  <i className="bi bi-images me-2"></i>Slider Yönetimi
+                </Link>
+              </li>
+              {/* YENİ EKLENEN LİNK */}
+              <li className="nav-item">
+                <Link className="nav-link text-white" href="/admin/products">
+                  <i className="bi bi-box-seam me-2"></i>Ürün Yönetimi
+                </Link>
+              </li>
+            </ul>
+            <ul className="nav flex-column mt-auto mb-3">
+              <li className="nav-item"><AdminLogoutButton /></li>
             </ul>
           </div>
         </div>
