@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function BookAppointmentPage() {
@@ -8,11 +8,12 @@ export default function BookAppointmentPage() {
   const searchParams = useSearchParams();
 
   const [formData, setFormData] = useState({
-    // URL'den gelen 'service' parametresini oku ve başlangıç değeri olarak ata
     serviceType: searchParams.get('service') || '',
     description: '',
     date: '',
     time: '',
+    phone: '',
+    address: '',
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -36,24 +37,16 @@ export default function BookAppointmentPage() {
       });
 
       const data = await res.json();
-      
-      // Eğer API isteği başarılı değilse...
       if (!res.ok) {
-        // --- İSTEDİĞİNİZ KONTROL ZATEN BURADA ---
-        // Eğer arka plandan gelen hata kodu 401 (Yetkisiz) ise,
-        // bu, kullanıcının giriş yapmadığı anlamına gelir.
         if (res.status === 401) {
-          // Kullanıcıyı giriş sayfasına yönlendir.
           router.push('/login?redirect=/book-appointment');
-          return; // İşlemi burada durdur.
+          return;
         }
-        // Diğer hatalar için genel bir hata mesajı göster.
         throw new Error(data.error || 'Randevu oluşturulamadı.');
       }
       
-      // Eğer işlem başarılıysa, başarı mesajını göster ve formu temizle.
       setSuccess('Randevunuz başarıyla oluşturuldu!');
-      setFormData({ serviceType: '', description: '', date: '', time: '' });
+      setFormData({ serviceType: '', description: '', date: '', time: '', phone: '', address: '' });
 
     } catch (err: any) {
       setError(err.message);
@@ -83,7 +76,15 @@ export default function BookAppointmentPage() {
                 </div>
                 <div className="mb-3">
                   <label htmlFor="description" className="form-label">Sorun Açıklaması</label>
-                  <textarea className="form-control" id="description" rows={4} value={formData.description} onChange={handleChange} required></textarea>
+                  <textarea className="form-control" id="description" rows={3} value={formData.description} onChange={handleChange} required></textarea>
+                </div>
+                <div className="mb-3">
+                  <label htmlFor="phone" className="form-label">Telefon Numaranız</label>
+                  <input type="tel" className="form-control" id="phone" value={formData.phone} onChange={handleChange} required />
+                </div>
+                <div className="mb-3">
+                  <label htmlFor="address" className="form-label">Adresiniz</label>
+                  <textarea className="form-control" id="address" rows={3} value={formData.address} onChange={handleChange} required></textarea>
                 </div>
                 <div className="row mb-3">
                   <div className="col-md-6">
@@ -100,8 +101,6 @@ export default function BookAppointmentPage() {
                        <option value="12:00">12:00</option>
                        <option value="14:00">14:00</option>
                        <option value="15:00">15:00</option>
-                       <option value="16:00">16:00</option>
-                       <option value="17:00">17:00</option>
                     </select>
                   </div>
                 </div>

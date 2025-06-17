@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import prisma from '../../../../../lib/prisma';
-import { verifyAuth } from '../../../../../lib/auth';
+import prisma from '../../../../lib/prisma'; // DOĞRU YOL
+import { verifyAuth } from '../../../../lib/auth'; // DOĞRU YOL
 
 export async function PUT(request, { params }) {
   const userPayload = await verifyAuth(request);

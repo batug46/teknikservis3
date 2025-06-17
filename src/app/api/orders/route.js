@@ -1,12 +1,17 @@
 import { NextResponse } from 'next/server';
-import prisma from '../../../lib/prisma'; // DOĞRU YOL
-import { verifyAuth } from '../../../lib/auth'; // DOĞRU YOL
+import prisma from '../../../lib/prisma';
+import { verifyAuth } from '../../../lib/auth';
 
 export async function POST(request) {
   try {
     const userPayload = await verifyAuth(request);
     if (!userPayload) {
       return NextResponse.json({ error: 'Bu işlemi yapmak için giriş yapmalısınız.' }, { status: 401 });
+    }
+
+    const currentUser = await prisma.user.findUnique({ where: { id: userPayload.id }});
+    if (!currentUser?.phone || !currentUser?.address) {
+        return NextResponse.json({ error: 'Lütfen profilinizdeki telefon ve adres bilgilerinizi tamamlayın.' }, { status: 400 });
     }
 
     const { cartItems } = await request.json();
@@ -21,10 +26,11 @@ export async function POST(request) {
         data: {
           userId: userPayload.id,
           total: totalPrice,
+          phone: currentUser.phone,
+          address: currentUser.address,
           status: 'pending',
         },
       });
-
       await tx.orderItem.createMany({
         data: cartItems.map((item) => ({
           orderId: newOrder.id,
@@ -33,13 +39,11 @@ export async function POST(request) {
           price: item.price,
         })),
       });
-
       return newOrder;
     });
 
     return NextResponse.json(order, { status: 201 });
   } catch (error) {
-    console.error('Sipariş oluşturma hatası:', error);
-    return NextResponse.json({ error: 'Sunucu hatası. Sipariş oluşturulamadı.' }, { status: 500 });
+    return NextResponse.json({ error: 'Sunucu hatası.' }, { status: 500 });
   }
 }

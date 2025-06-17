@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 
+// Tiplere yeni alanlar eklendi
 interface OrderItem { id: number; rating: number | null; product: { name: string; }; quantity: number; }
-interface Order { id: number; total: number; status: string; createdAt: string; user: { name: string | null; }; items: OrderItem[]; }
+interface Order { id: number; total: number; status: string; createdAt: string; user: { name: string | null; }; items: OrderItem[]; phone: string | null; address: string | null; }
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -52,10 +53,21 @@ export default function AdminOrdersPage() {
                   <button type="button" className="btn-close" onClick={() => setSelectedOrder(null)}></button>
                 </div>
                 <div className="modal-body">
-                  <h6>Müşteri: {selectedOrder.user?.name}</h6>
-                  <table className="table mt-3">
+                  <h6>Müşteri Bilgileri</h6>
+                  <p>
+                    <strong>İsim:</strong> {selectedOrder.user?.name}<br/>
+                    <strong>Telefon:</strong> {selectedOrder.phone || 'Belirtilmemiş'}<br/>
+                    <strong>Adres:</strong> {selectedOrder.address || 'Belirtilmemiş'}
+                  </p>
+                  <hr/>
+                  <h6>Ürünler</h6>
+                   <table className="table mt-3">
                     <thead>
-                        <tr><th>Ürün</th><th>Adet</th><th>Puan</th></tr>
+                        <tr>
+                            <th>Ürün</th>
+                            <th>Adet</th>
+                            <th>Puan</th>
+                        </tr>
                     </thead>
                     <tbody>
                         {selectedOrder.items && selectedOrder.items.map(item => (

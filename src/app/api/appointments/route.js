@@ -1,37 +1,37 @@
 import { NextResponse } from 'next/server';
 import prisma from '../../../lib/prisma';
-import { verifyAuth } from '../../../lib/auth'; // Kimlik doğrulama yardımcımız
+import { verifyAuth } from '../../../lib/auth';
 
 export async function POST(request) {
   try {
     const userPayload = await verifyAuth(request);
-
-    // Eğer kullanıcı giriş yapmamışsa, yetkisiz hatası döndür.
     if (!userPayload) {
       return NextResponse.json({ error: 'Bu işlemi yapmak için giriş yapmalısınız.' }, { status: 401 });
     }
 
     const body = await request.json();
-    const { serviceType, description, date, time } = body;
+    // Yeni alanları alıyoruz
+    const { serviceType, description, date, time, phone, address } = body;
 
-    if (!serviceType || !description || !date || !time) {
+    if (!serviceType || !description || !date || !time || !phone || !address) {
       return NextResponse.json({ error: 'Tüm alanlar zorunludur.' }, { status: 400 });
     }
 
     const newAppointment = await prisma.appointment.create({
       data: {
-        userId: userPayload.id, // Giriş yapmış kullanıcının ID'si
+        userId: userPayload.id,
         serviceType,
         description,
-        date: new Date(date), // Tarihi Date objesine çevir
+        date: new Date(date),
         time,
-        status: 'pending', // Varsayılan durum
+        phone, // Veritabanına ekle
+        address, // Veritabanına ekle
+        status: 'pending',
       },
     });
 
     return NextResponse.json(newAppointment, { status: 201 });
   } catch (error) {
-    console.error('Randevu oluşturma hatası:', error);
-    return NextResponse.json({ error: 'Randevu oluşturulurken bir sunucu hatası oluştu.' }, { status: 500 });
+    return NextResponse.json({ error: 'Randevu oluşturulamadı.' }, { status: 500 });
   }
 }

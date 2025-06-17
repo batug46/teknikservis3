@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, FormEvent } from 'react';
 
-// Tipleri tanımlayalım
-interface User { id: number; name: string; email: string; phone: string | null; }
+// Gerekli tipleri tanımlayalım
+interface User { id: number; name: string; email: string; phone: string | null; address: string | null; }
 interface OrderItem { id: number; rating: number | null; product: { name: string; }; }
 interface Order { id: number; createdAt: string; total: number; status: string; items: OrderItem[]; }
 
@@ -12,10 +12,11 @@ export default function ProfilePage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Form verileri için state'ler
+  // Form state'leri
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [message, setMessage] = useState({ type: '', text: '' });
@@ -23,7 +24,7 @@ export default function ProfilePage() {
   // Puanlama modal'ı için state'ler
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [ratings, setRatings] = useState<{ [key: number]: number }>({});
+  const [ratings, setRatings] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -35,6 +36,7 @@ export default function ProfilePage() {
         setName(storedUser.name || '');
         setEmail(storedUser.email || '');
         setPhone(storedUser.phone || '');
+        setAddress(storedUser.address || '');
 
         const ordersRes = await fetch('/api/profile/orders', { cache: 'no-store' });
         if (ordersRes.ok) {
@@ -50,6 +52,7 @@ export default function ProfilePage() {
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage({ type: '', text: '' });
+
     if (newPassword && !currentPassword) {
       setMessage({ type: 'danger', text: 'Yeni şifre belirlemek için mevcut şifrenizi girmelisiniz.' });
       return;
@@ -58,7 +61,7 @@ export default function ProfilePage() {
       const res = await fetch('/api/profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, phone, currentPassword, newPassword }),
+        body: JSON.stringify({ name, email, phone, address, currentPassword, newPassword }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -77,14 +80,14 @@ export default function ProfilePage() {
     if (!order || !order.items) return;
     setSelectedOrder(order);
     const initialRatings = order.items.reduce((acc, item) => {
-      acc[item.id] = item.rating || 0;
+      acc[item.id] = String(item.rating || "0");
       return acc;
-    }, {} as { [key: number]: number });
+    }, {} as { [key: string]: string });
     setRatings(initialRatings);
     setShowRatingModal(true);
   };
 
-  const handleRatingChange = (orderItemId: number, rating: number) => {
+  const handleRatingChange = (orderItemId: number, rating: string) => {
     setRatings(prev => ({ ...prev, [orderItemId]: rating }));
   };
   
@@ -92,11 +95,12 @@ export default function ProfilePage() {
     e.preventDefault();
     if (!selectedOrder) return;
     for (const orderItemId in ratings) {
-      if (ratings[orderItemId] > 0) {
+      const ratingValue = parseInt(ratings[orderItemId]);
+      if (ratingValue > 0) {
          await fetch(`/api/order-items/${orderItemId}`, {
            method: 'PUT',
            headers: { 'Content-Type': 'application/json' },
-           body: JSON.stringify({ rating: ratings[orderItemId] }),
+           body: JSON.stringify({ rating: ratingValue }),
          });
       }
     }
@@ -134,8 +138,12 @@ export default function ProfilePage() {
                   <input type="email" className="form-control" id="email" value={email} onChange={e => setEmail(e.target.value)} required />
                 </div>
                 <div className="mb-3">
-                  <label htmlFor="phone" className="form-label">Telefon (İsteğe Bağlı)</label>
+                  <label htmlFor="phone" className="form-label">Telefon</label>
                   <input type="tel" className="form-control" id="phone" value={phone || ''} onChange={e => setPhone(e.target.value)} />
+                </div>
+                 <div className="mb-3">
+                  <label htmlFor="address" className="form-label">Teslimat Adresi</label>
+                  <textarea className="form-control" id="address" rows={3} value={address || ''} onChange={e => setAddress(e.target.value)}></textarea>
                 </div>
                 <hr />
                 <h6 className="mt-4">Şifre Değiştir</h6>
@@ -201,17 +209,18 @@ export default function ProfilePage() {
                   {selectedOrder.items.map(item => (
                     <div key={item.id} className="mb-3">
                       <label className="form-label">{item.product.name}</label>
-                      {/* EKSİK OLAN YILDIZ PUANLAMA SİSTEMİ */}
-                      <div>
-                        {[1, 2, 3, 4, 5].map(star => (
-                          <i 
-                            key={star}
-                            className={`bi bi-star-fill fs-4 me-1`} 
-                            style={{ cursor: 'pointer', color: star <= (ratings[item.id] || 0) ? 'gold' : 'lightgray' }}
-                            onClick={() => handleRatingChange(item.id, star)}
-                          ></i>
-                        ))}
-                      </div>
+                      <select 
+                        className="form-select"
+                        value={ratings[item.id] || "0"}
+                        onChange={(e) => handleRatingChange(item.id, e.target.value)}
+                      >
+                        <option value="0" disabled>Puan Seçin...</option>
+                        <option value="1">1 - Çok Kötü</option>
+                        <option value="2">2 - Kötü</option>
+                        <option value="3">3 - Orta</option>
+                        <option value="4">4 - İyi</option>
+                        <option value="5">5 - Çok İyi</option>
+                      </select>
                     </div>
                   ))}
                 </div>

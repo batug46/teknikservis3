@@ -2,16 +2,17 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 
-// Gelen verinin tipini tanımlıyoruz
+// Gelen verinin tipini tanımlayalım
 interface Appointment {
   id: number;
   serviceType: string;
-  description: string;
   date: string;
   time: string;
-  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
+  status: string;
   user: { name: string | null };
-  price: number; // Ücret için yeni alan
+  price: number;
+  phone: string | null;
+  address: string | null;
 }
 
 export default function AdminAppointmentsPage() {
@@ -19,17 +20,17 @@ export default function AdminAppointmentsPage() {
     const [loading, setLoading] = useState(true);
 
     const fetchAppointments = useCallback(async () => {
-        try {
-            const res = await fetch('/api/admin/appointments');
-            const data = await res.json();
-            if (res.ok) {
-              setAppointments(data);
-            }
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setLoading(false);
+      try {
+        const res = await fetch('/api/admin/appointments');
+        const data = await res.json();
+        if (res.ok) {
+          setAppointments(data);
         }
+      } catch (error) {
+          console.error("Randevular çekilemedi:", error);
+      } finally {
+          setLoading(false);
+      }
     }, []);
 
     useEffect(() => {
@@ -49,6 +50,18 @@ export default function AdminAppointmentsPage() {
       }
     };
 
+    // YENİ SİLME FONKSİYONU
+    const handleDelete = async (id: number) => {
+        if (window.confirm('Bu randevuyu kalıcı olarak silmek istediğinizden emin misiniz?')) {
+            try {
+                await fetch(`/api/admin/appointments/${id}`, { method: 'DELETE' });
+                fetchAppointments(); // Silme sonrası listeyi yenile
+            } catch (error) {
+                alert('Randevu silinemedi.');
+            }
+        }
+    };
+
     if (loading) return <div>Randevular yükleniyor...</div>;
 
     return (
@@ -61,10 +74,12 @@ export default function AdminAppointmentsPage() {
                             <th>ID</th>
                             <th>Müşteri</th>
                             <th>Servis Tipi</th>
-                            <th>Ücret</th>
+                            <th>Telefon</th>
+                            <th>Adres</th>
                             <th>Tarih</th>
                             <th>Saat</th>
                             <th>Durum</th>
+                            <th>İşlemler</th> {/* YENİ SÜTUN */}
                         </tr>
                     </thead>
                     <tbody>
@@ -73,12 +88,13 @@ export default function AdminAppointmentsPage() {
                                 <td>{appt.id}</td>
                                 <td>{appt.user?.name || 'Bilinmiyor'}</td>
                                 <td>{appt.serviceType}</td>
-                                <td>{appt.price.toFixed(2)} TL</td>
+                                <td>{appt.phone || '-'}</td>
+                                <td>{appt.address || '-'}</td>
                                 <td>{new Date(appt.date).toLocaleDateString()}</td>
                                 <td>{appt.time}</td>
                                 <td>
                                   <select
-                                    className="form-select form-select-sm w-auto"
+                                    className="form-select form-select-sm"
                                     value={appt.status}
                                     onChange={(e) => handleStatusChange(appt.id, e.target.value)}
                                   >
@@ -87,6 +103,15 @@ export default function AdminAppointmentsPage() {
                                     <option value="completed">Tamamlandı</option>
                                     <option value="cancelled">İptal Edildi</option>
                                   </select>
+                                </td>
+                                <td>
+                                  {/* GÜNCELLENMİŞ SİLME BUTONU */}
+                                  <button 
+                                    className="btn btn-sm btn-outline-danger"
+                                    onClick={() => handleDelete(appt.id)}
+                                  >
+                                    <i className="bi bi-trash me-1"></i> Sil
+                                  </button>
                                 </td>
                             </tr>
                         ))}

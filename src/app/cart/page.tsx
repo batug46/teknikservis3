@@ -5,11 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 interface CartItem {
-  id: number;
-  name: string;
-  price: number;
-  quantity: number;
-  stock: number;
+  id: number; name: string; price: number; quantity: number; stock: number;
 }
 
 export default function CartPage() {
@@ -37,8 +33,8 @@ export default function CartPage() {
         }
       }
       return item;
-    });
-    updateCart(newCart.filter(item => item.quantity > 0));
+    }).filter(item => item.quantity > 0);
+    updateCart(newCart);
   };
 
   const handleRemoveItem = (productId: number) => {
@@ -46,6 +42,12 @@ export default function CartPage() {
   };
 
   const handleCompletePurchase = async () => {
+    const user = localStorage.getItem('user');
+    if (!user) {
+        router.push('/login?redirect=/cart');
+        return;
+    }
+
     setLoading(true);
     setMessage({ type: '', text: '' });
     try {
@@ -56,15 +58,8 @@ export default function CartPage() {
       });
 
       const data = await res.json();
-      if (!res.ok) {
-        if (res.status === 401) {
-          router.push('/login?redirect=/cart');
-          return;
-        }
-        throw new Error(data.error || 'Sipariş oluşturulamadı.');
-      }
+      if (!res.ok) throw new Error(data.error || 'Sipariş oluşturulamadı.');
       
-      // DÜZELTME: Yönlendirme yerine başarı mesajı göster ve sepeti boşalt
       setMessage({ type: 'success', text: 'Siparişiniz başarıyla oluşturuldu!' });
       updateCart([]);
 
@@ -80,21 +75,10 @@ export default function CartPage() {
   return (
     <div className="container my-5">
       <h2>Sepetim</h2>
-
-      {/* Başarı veya Hata Mesajı Alanı */}
-      {message.text && (
-        <div className={`alert alert-${message.type} mt-4`}>
-          {message.text}
-        </div>
-      )}
-
+      {message.text && <div className={`alert alert-${message.type} mt-3`}>{message.text}</div>}
+      
       {cart.length === 0 ? (
-        // Eğer mesaj başarı mesajı değilse "Sepetiniz boş" göster.
-        message.type !== 'success' && (
-          <div className="alert alert-info mt-4">
-            Sepetiniz boş. <Link href="/products">Ürünlere göz atın.</Link>
-          </div>
-        )
+        message.type !== 'success' && <div className="alert alert-info mt-4">Sepetiniz boş. <Link href="/products">Ürünlere göz atın.</Link></div>
       ) : (
         <div className="row mt-4">
           <div className="col-lg-8">
@@ -130,9 +114,9 @@ export default function CartPage() {
                 <button 
                   className="btn btn-primary w-100" 
                   onClick={handleCompletePurchase}
-                  disabled={loading}
+                  disabled={loading || cart.length === 0}
                 >
-                  {loading ? 'İşleniyor...' : 'Alışverişi Tamamla'}
+                  {loading ? 'Onaylanıyor...' : 'Alışverişi Tamamla'}
                 </button>
               </div>
             </div>
