@@ -1,6 +1,8 @@
 import prisma from '../lib/prisma';
-import MainSlider from '../components/MainSlider'; // Yeni slider bileşenini import ediyoruz
+import MainSlider from '../components/MainSlider'; // Slider bileşenimiz
+import Link from 'next/link';
 
+// Bu satır, sayfanın her zaman en güncel veriyi çekmesini sağlar.
 export const dynamic = 'force-dynamic';
 
 async function getSlides() {
@@ -14,12 +16,12 @@ export default async function Home() {
 
     return (
         <div>
+            {/* TIKLANABİLİR SLIDER BÖLÜMÜ */}
             <MainSlider slides={slides} />
             
-            <div className="container">
-              {/* Sayfanızın geri kalan içeriği (Hizmetlerimiz vb.) burada devam edebilir */}
-              <h2 className="text-center">Hizmetlerimiz</h2>
-              {/* ... */}
+            <div className="container my-5 text-center">
+                <h2>Hizmetlerimiz</h2>
+                {/* Buraya gelecekte hizmetlerinizle ilgili daha fazla içerik ekleyebilirsiniz. */}
             </div>
         </div>
     );

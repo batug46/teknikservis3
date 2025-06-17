@@ -2,12 +2,13 @@
 
 import React, { useState, useEffect, useCallback, FormEvent } from 'react';
 
-// Tipleri tanımlayalım
+// User tipine 'phone' alanı eklendi
 interface User {
   id: number;
   name: string;
   email: string;
   role: 'admin' | 'user';
+  phone: string | null; // Telefon alanı eklendi
 }
 
 export default function AdminUsersPage() {
@@ -15,12 +16,10 @@ export default function AdminUsersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Yeni kullanıcı ekleme modal'ı için state'ler
   const [showModal, setShowModal] = useState(false);
   const [newUser, setNewUser] = useState({ name: '', email: '', password: '', role: 'user' });
   const [modalError, setModalError] = useState('');
 
-  // Kullanıcıları API'den çeken fonksiyon
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -40,7 +39,6 @@ export default function AdminUsersPage() {
     fetchUsers();
   }, [fetchUsers]);
 
-  // Rol değiştirme fonksiyonu
   const handleRoleChange = async (userId: number, newRole: string) => {
     try {
       const res = await fetch(`/api/admin/users/${userId}`, {
@@ -49,27 +47,25 @@ export default function AdminUsersPage() {
         body: JSON.stringify({ role: newRole }),
       });
       if (!res.ok) throw new Error("Rol değiştirilemedi.");
-      fetchUsers(); // Başarılı olursa listeyi yenile
+      fetchUsers();
     } catch (err: any) {
       alert(err.message);
     }
   };
 
-  // Kullanıcı silme fonksiyonu
   const handleDelete = async (userId: number) => {
     if (window.confirm('Bu kullanıcıyı silmek istediğinizden emin misiniz?')) {
       try {
         const res = await fetch(`/api/admin/users/${userId}`, { method: 'DELETE' });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Kullanıcı silinemedi.");
-        fetchUsers(); // Başarılı olursa listeyi yenile
+        fetchUsers();
       } catch (err: any) {
         alert(err.message);
       }
     }
   };
 
-  // Yeni kullanıcı oluşturma fonksiyonu
   const handleCreateUser = async (e: FormEvent) => {
     e.preventDefault();
     setModalError('');
@@ -112,6 +108,7 @@ export default function AdminUsersPage() {
               <th>ID</th>
               <th>İsim</th>
               <th>Email</th>
+              <th>Telefon</th> {/* YENİ SÜTUN */}
               <th>Rol</th>
               <th>İşlemler</th>
             </tr>
@@ -122,6 +119,7 @@ export default function AdminUsersPage() {
                 <td>{user.id}</td>
                 <td>{user.name}</td>
                 <td>{user.email}</td>
+                <td>{user.phone || 'Belirtilmemiş'}</td> {/* TELEFON VERİSİ */}
                 <td>
                   <select
                     className="form-select form-select-sm w-auto"

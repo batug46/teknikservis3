@@ -36,16 +36,25 @@ export default function BookAppointmentPage() {
       });
 
       const data = await res.json();
+      
+      // Eğer API isteği başarılı değilse...
       if (!res.ok) {
+        // --- İSTEDİĞİNİZ KONTROL ZATEN BURADA ---
+        // Eğer arka plandan gelen hata kodu 401 (Yetkisiz) ise,
+        // bu, kullanıcının giriş yapmadığı anlamına gelir.
         if (res.status === 401) {
+          // Kullanıcıyı giriş sayfasına yönlendir.
           router.push('/login?redirect=/book-appointment');
-          return;
+          return; // İşlemi burada durdur.
         }
+        // Diğer hatalar için genel bir hata mesajı göster.
         throw new Error(data.error || 'Randevu oluşturulamadı.');
       }
       
+      // Eğer işlem başarılıysa, başarı mesajını göster ve formu temizle.
       setSuccess('Randevunuz başarıyla oluşturuldu!');
       setFormData({ serviceType: '', description: '', date: '', time: '' });
+
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -83,7 +92,6 @@ export default function BookAppointmentPage() {
                   </div>
                   <div className="col-md-6">
                     <label htmlFor="time" className="form-label">Randevu Saati</label>
-                    {/* Saat seçenekleri artırıldı */}
                     <select className="form-select" id="time" value={formData.time} onChange={handleChange} required>
                        <option value="">Seçiniz...</option>
                        <option value="09:00">09:00</option>

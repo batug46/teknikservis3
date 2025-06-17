@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import prisma from '../../../lib/prisma';
-import { verifyAuth } from '../../../lib/auth';
+import prisma from '../../../lib/prisma'; // DOĞRU YOL
+import { verifyAuth } from '../../../lib/auth'; // DOĞRU YOL
 
 export async function POST(request) {
   try {
@@ -9,14 +9,11 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Bu işlemi yapmak için giriş yapmalısınız.' }, { status: 401 });
     }
 
-    const body = await request.json(); // .json() ile okuyoruz
-    
-    // Gelen veride 'cartItems' olup olmadığını kontrol ediyoruz
-    if (!body || !Array.isArray(body.cartItems) || body.cartItems.length === 0) {
-      return NextResponse.json({ error: 'Sepet bilgileri eksik veya boş.' }, { status: 400 });
+    const { cartItems } = await request.json();
+    if (!cartItems || cartItems.length === 0) {
+      return NextResponse.json({ error: 'Sepet boş.' }, { status: 400 });
     }
 
-    const { cartItems } = body;
     const totalPrice = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
 
     const order = await prisma.$transaction(async (tx) => {

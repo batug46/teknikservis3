@@ -1,15 +1,15 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 
-// Gelen slide verisinin tipini tanımlıyoruz
 interface Slide {
   id: number;
   title: string;
   imageUrl: string;
+  linkUrl: string | null;
 }
 
-// Bileşenin alacağı prop'ların tipini tanımlıyoruz
 interface MainSliderProps {
   slides: Slide[];
 }
@@ -21,7 +21,7 @@ export default function MainSlider({ slides }: MainSliderProps) {
   };
 
   if (slides.length === 0) {
-    return null; // Gösterilecek slide yoksa hiçbir şey gösterme
+    return null;
   }
 
   return (
@@ -29,16 +29,18 @@ export default function MainSlider({ slides }: MainSliderProps) {
       <div className="carousel-inner">
         {slides.map((slide, index) => (
           <div key={slide.id} className={`carousel-item ${index === 0 ? 'active' : ''}`}>
-            <img 
-              src={slide.imageUrl} 
-              className="d-block w-100" 
-              alt={slide.title} 
-              style={{ maxHeight: '500px', objectFit: 'cover' }}
-              onError={handleImageError} // Hata durumunda çalışacak fonksiyon
-            />
-            <div className="carousel-caption d-none d-md-block">
-              <h5>{slide.title}</h5>
-            </div>
+            <Link href={slide.linkUrl || '#'}>
+                <img 
+                  src={slide.imageUrl} 
+                  className="d-block w-100" 
+                  alt={slide.title} 
+                  style={{ maxHeight: '500px', objectFit: 'cover', cursor: 'pointer' }}
+                  onError={handleImageError}
+                />
+                <div className="carousel-caption d-none d-md-block">
+                  <h5>{slide.title}</h5>
+                </div>
+            </Link>
           </div>
         ))}
       </div>

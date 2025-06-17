@@ -32,6 +32,8 @@ model User {
   updatedAt DateTime @updatedAt
   appointments Appointment[]
   orders    Order[]
+  sentMessages     PrivateMessage[] @relation("SentMessages")
+  receivedMessages PrivateMessage[] @relation("ReceivedMessages")
 }
 
 model Product {
@@ -54,8 +56,9 @@ model OrderItem {
   orderId   Int
   product   Product  @relation(fields: [productId], references: [id])
   productId Int
-  quantity  Int      // Bu üründen kaç adet alındığı
-  price     Float    // Satın alma anındaki ürün fiyatı
+  quantity  Int
+  price     Float
+  rating    Int?     // Puan alanı (1-5 arası, isteğe bağlı)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -96,6 +99,7 @@ model Slider {
   id        Int      @id @default(autoincrement())
   title     String
   imageUrl  String
+  linkUrl   String?  // YENİ ALAN: Tıklanacak link (isteğe bağlı)
   order     Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -122,4 +126,19 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model PrivateMessage {
+  id          Int      @id @default(autoincrement())
+  sender      User     @relation("SentMessages", fields: [senderId], references: [id])
+  senderId    Int
+  recipient   User     @relation("ReceivedMessages", fields: [recipientId], references: [id])
+  recipientId Int
+  subject     String
+  body        String   // DÜZELTME: @db.Text ifadesi SQLite ile uyumlu olmadığı için kaldırıldı.
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([senderId])
+  @@index([recipientId])
 }

@@ -115,6 +115,11 @@ export default function Navbar() {
                   </li>
                 )}
                 <li className="nav-item">
+                  <Link href="/messages" className="nav-link">
+                    Mesajlarım
+                  </Link>
+                </li>
+                <li className="nav-item">
                   <Link href="/profile" className="nav-link">
                     Profilim
                   </Link>

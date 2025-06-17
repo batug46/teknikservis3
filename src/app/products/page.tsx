@@ -2,7 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
+// Tipleri tanımlayalım
 interface Product {
   id: number;
   name: string;
@@ -38,10 +40,12 @@ export default function ProductsPage() {
     fetchProducts();
   }, []);
 
+  // Randevu Al fonksiyonu
   const handleBookAppointment = (serviceName: string) => {
     router.push(`/book-appointment?service=${encodeURIComponent(serviceName)}`);
   };
 
+  // Sepete Ekle fonksiyonu
   const handleAddToCart = (productToAdd: Product) => {
     const cart: CartItem[] = JSON.parse(localStorage.getItem('cart') || '[]');
     const existingItem = cart.find(item => item.id === productToAdd.id);
@@ -74,7 +78,6 @@ export default function ProductsPage() {
                   src={product.imageUrl || `https://placehold.co/600x400.png?text=Gorsel+Yok`} 
                   className="card-img-top" alt={product.name}
                   style={{ height: '200px', objectFit: 'cover' }}
-                  onError={(e) => (e.currentTarget.src = 'https://placehold.co/600x400.png?text=Gorsel+Yok')}
                 />
                 <div className="card-body d-flex flex-column">
                   <h5 className="card-title">{product.name}</h5>
@@ -96,31 +99,34 @@ export default function ProductsPage() {
 
       <hr className="my-5" />
 
-      {/* SATILABİLİR ÜRÜNLER BÖLÜMÜ */}
+      {/* SATILABİLİR ÜRÜNLER BÖLÜMÜ (SEPETE EKLE BUTONU GERİ GETİRİLDİ) */}
       <div>
         <h2>Ürünler</h2>
         <div className="row g-4 mt-2">
           {physicalProducts.map((product) => (
             <div key={product.id} className="col-md-4">
-              <div className="card h-100">
-                <img 
-                  src={product.imageUrl || `https://placehold.co/600x400.png?text=Gorsel+Yok`}
-                  className="card-img-top" alt={product.name}
-                  style={{ height: '200px', objectFit: 'cover' }}
-                  onError={(e) => (e.currentTarget.src = 'https://placehold.co/600x400.png?text=Gorsel+Yok')}
-                />
-                <div className="card-body d-flex flex-column">
-                  <h5 className="card-title">{product.name}</h5>
-                  <p className="card-text fs-5 fw-bold text-primary mt-auto pt-2">
-                    {product.price.toFixed(2)} TL
-                  </p>
-                  <button
-                    onClick={() => handleAddToCart(product)}
-                    className={`btn w-100 mt-2 ${addedToCart === product.id ? 'btn-success' : 'btn-primary'}`}
-                    disabled={addedToCart === product.id || product.stock === 0}
-                  >
-                    {product.stock === 0 ? 'Tükendi' : (addedToCart === product.id ? 'Sepete Eklendi!' : 'Sepete Ekle')}
-                  </button>
+              <div className="card h-100 d-flex flex-column">
+                <Link href={`/products/${product.id}`} className="text-decoration-none text-dark d-block">
+                  <img 
+                    src={product.imageUrl || `https://placehold.co/600x400.png?text=Gorsel+Yok`}
+                    className="card-img-top" alt={product.name}
+                    style={{ height: '200px', objectFit: 'cover' }}
+                  />
+                  <div className="card-body">
+                    <h5 className="card-title">{product.name}</h5>
+                    <p className="card-text fs-5 fw-bold text-primary">
+                      {product.price.toFixed(2)} TL
+                    </p>
+                  </div>
+                </Link>
+                <div className="card-footer bg-white border-0 pb-3 mt-auto">
+                    <button
+                        onClick={() => handleAddToCart(product)}
+                        className={`btn w-100 ${addedToCart === product.id ? 'btn-success' : 'btn-primary'}`}
+                        disabled={addedToCart === product.id || product.stock === 0}
+                    >
+                        {product.stock === 0 ? 'Tükendi' : (addedToCart === product.id ? 'Sepete Eklendi!' : 'Sepete Ekle')}
+                    </button>
                 </div>
               </div>
             </div>

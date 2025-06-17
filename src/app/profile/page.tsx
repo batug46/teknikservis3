@@ -1,20 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, FormEvent } from 'react';
 
 // Tipleri tanımlayalım
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  phone: string | null;
-}
-interface Order {
-  id: number;
-  createdAt: string;
-  total: number;
-  status: string;
-}
+interface User { id: number; name: string; email: string; phone: string | null; }
+interface OrderItem { id: number; rating: number | null; product: { name: string; }; }
+interface Order { id: number; createdAt: string; total: number; status: string; items: OrderItem[]; }
 
 export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null);
@@ -23,21 +14,26 @@ export default function ProfilePage() {
 
   // Form verileri için state'ler
   const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [message, setMessage] = useState({ type: '', text: '' });
+  
+  // Puanlama modal'ı için state'ler
+  const [showRatingModal, setShowRatingModal] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [ratings, setRatings] = useState<{ [key: number]: number }>({});
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
-        if (!storedUser) {
-          window.location.href = '/login';
-          return;
-        }
+        if (!storedUser) { window.location.href = '/login'; return; }
+        
         setUser(storedUser);
         setName(storedUser.name || '');
+        setEmail(storedUser.email || '');
         setPhone(storedUser.phone || '');
 
         const ordersRes = await fetch('/api/profile/orders', { cache: 'no-store' });
@@ -45,11 +41,8 @@ export default function ProfilePage() {
           const ordersData = await ordersRes.json();
           setOrders(ordersData);
         }
-      } catch (error) {
-        console.error("Veri yüklenirken hata:", error);
-      } finally {
-        setLoading(false);
-      }
+      } catch (error) { console.error("Veri yüklenirken hata:", error); } 
+      finally { setLoading(false); }
     };
     fetchData();
   }, []);
@@ -57,29 +50,58 @@ export default function ProfilePage() {
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage({ type: '', text: '' });
-
     if (newPassword && !currentPassword) {
       setMessage({ type: 'danger', text: 'Yeni şifre belirlemek için mevcut şifrenizi girmelisiniz.' });
       return;
     }
-
     try {
       const res = await fetch('/api/profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, phone, currentPassword, newPassword }),
+        body: JSON.stringify({ name, email, phone, currentPassword, newPassword }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Profil güncellenemedi.');
+      if (!res.ok) throw new Error(data.error);
       
       localStorage.setItem('user', JSON.stringify(data.user));
+      setUser(data.user);
       setMessage({ type: 'success', text: 'Profiliniz başarıyla güncellendi.' });
       setCurrentPassword('');
       setNewPassword('');
-
     } catch (err: any) {
       setMessage({ type: 'danger', text: err.message });
     }
+  };
+  
+  const openRatingModal = (order: Order) => {
+    if (!order || !order.items) return;
+    setSelectedOrder(order);
+    const initialRatings = order.items.reduce((acc, item) => {
+      acc[item.id] = item.rating || 0;
+      return acc;
+    }, {} as { [key: number]: number });
+    setRatings(initialRatings);
+    setShowRatingModal(true);
+  };
+
+  const handleRatingChange = (orderItemId: number, rating: number) => {
+    setRatings(prev => ({ ...prev, [orderItemId]: rating }));
+  };
+  
+  const handleRatingSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!selectedOrder) return;
+    for (const orderItemId in ratings) {
+      if (ratings[orderItemId] > 0) {
+         await fetch(`/api/order-items/${orderItemId}`, {
+           method: 'PUT',
+           headers: { 'Content-Type': 'application/json' },
+           body: JSON.stringify({ rating: ratings[orderItemId] }),
+         });
+      }
+    }
+    setShowRatingModal(false);
+    window.location.reload();
   };
 
   if (loading || !user) {
@@ -105,10 +127,14 @@ export default function ProfilePage() {
               <form onSubmit={handleUpdateProfile} className="mt-3">
                 <div className="mb-3">
                   <label htmlFor="name" className="form-label">Ad Soyad</label>
-                  <input type="text" className="form-control" id="name" value={name} onChange={e => setName(e.target.value)} />
+                  <input type="text" className="form-control" id="name" value={name} onChange={e => setName(e.target.value)} required />
                 </div>
                 <div className="mb-3">
-                  <label htmlFor="phone" className="form-label">Telefon</label>
+                  <label htmlFor="email" className="form-label">E-posta</label>
+                  <input type="email" className="form-control" id="email" value={email} onChange={e => setEmail(e.target.value)} required />
+                </div>
+                <div className="mb-3">
+                  <label htmlFor="phone" className="form-label">Telefon (İsteğe Bağlı)</label>
                   <input type="tel" className="form-control" id="phone" value={phone || ''} onChange={e => setPhone(e.target.value)} />
                 </div>
                 <hr />
@@ -130,26 +156,30 @@ export default function ProfilePage() {
             <div className="card-body">
               <h5 className="card-title">Sipariş Geçmişim</h5>
               {orders.length > 0 ? (
-                <table className="table mt-3">
-                    <thead>
-                    <tr>
-                        <th>Sipariş ID</th>
-                        <th>Tarih</th>
-                        <th>Tutar</th>
-                        <th>Durum</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {orders.map(order => (
-                        <tr key={order.id}>
-                        <td>#{order.id}</td>
-                        <td>{new Date(order.createdAt).toLocaleDateString()}</td>
-                        <td>{order.total.toFixed(2)} TL</td>
-                        <td>{order.status}</td>
-                        </tr>
-                    ))}
-                    </tbody>
-                </table>
+                <div className="table-responsive">
+                  <table className="table mt-3">
+                      <thead>
+                      <tr>
+                          <th>Sipariş ID</th><th>Tarih</th><th>Tutar</th><th>Durum</th><th>İşlem</th>
+                      </tr>
+                      </thead>
+                      <tbody>
+                      {orders.map(order => (
+                          <tr key={order.id}>
+                          <td>#{order.id}</td>
+                          <td>{new Date(order.createdAt).toLocaleDateString()}</td>
+                          <td>{order.total.toFixed(2)} TL</td>
+                          <td>{order.status}</td>
+                          <td>
+                             <button className="btn btn-sm btn-outline-primary" onClick={() => openRatingModal(order)}>
+                               Değerlendir
+                             </button>
+                          </td>
+                          </tr>
+                      ))}
+                      </tbody>
+                  </table>
+                </div>
               ) : (
                 <p className="text-muted mt-3">Henüz sipariş vermediniz.</p>
               )}
@@ -157,6 +187,43 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
+       {showRatingModal && selectedOrder && (
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <form onSubmit={handleRatingSubmit}>
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">Siparişi Değerlendir (#{selectedOrder.id})</h5>
+                  <button type="button" className="btn-close" onClick={() => setShowRatingModal(false)}></button>
+                </div>
+                <div className="modal-body">
+                  {selectedOrder.items.map(item => (
+                    <div key={item.id} className="mb-3">
+                      <label className="form-label">{item.product.name}</label>
+                      {/* EKSİK OLAN YILDIZ PUANLAMA SİSTEMİ */}
+                      <div>
+                        {[1, 2, 3, 4, 5].map(star => (
+                          <i 
+                            key={star}
+                            className={`bi bi-star-fill fs-4 me-1`} 
+                            style={{ cursor: 'pointer', color: star <= (ratings[item.id] || 0) ? 'gold' : 'lightgray' }}
+                            onClick={() => handleRatingChange(item.id, star)}
+                          ></i>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="modal-footer">
+                  <button type="button" className="btn btn-secondary" onClick={() => setShowRatingModal(false)}>Kapat</button>
+                  <button type="submit" className="btn btn-primary">Puanları Kaydet</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

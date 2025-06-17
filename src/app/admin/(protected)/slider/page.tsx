@@ -2,21 +2,23 @@
 
 import React, { useState, useEffect, useCallback, FormEvent } from 'react';
 
+// Interface'e linkUrl eklendi
 interface Slide {
   id: number;
   title: string;
   imageUrl: string;
   order: number;
+  linkUrl: string | null; 
 }
 
 export default function AdminSliderPage() {
   const [slides, setSlides] = useState<Slide[]>([]);
   const [loading, setLoading] = useState(true);
   
-  // Modal state'leri
+  // Modal state'leri ve başlangıç değeri güncellendi
   const [showModal, setShowModal] = useState(false);
   const [editingSlide, setEditingSlide] = useState<Slide | null>(null);
-  const [slideData, setSlideData] = useState({ title: '', imageUrl: '', order: 0 });
+  const [slideData, setSlideData] = useState({ title: '', imageUrl: '', order: 0, linkUrl: '' });
 
   const fetchSlides = useCallback(async () => {
     setLoading(true);
@@ -37,15 +39,17 @@ export default function AdminSliderPage() {
     fetchSlides();
   }, [fetchSlides]);
 
+  // Yeni slide oluşturma modal'ı için başlangıç değerleri güncellendi
   const openModalForCreate = () => {
     setEditingSlide(null);
-    setSlideData({ title: '', imageUrl: '', order: 0 });
+    setSlideData({ title: '', imageUrl: '', order: 0, linkUrl: '' });
     setShowModal(true);
   };
 
+  // Düzenleme modal'ı için linkUrl alanı eklendi
   const openModalForEdit = (slide: Slide) => {
     setEditingSlide(slide);
-    setSlideData({ title: slide.title, imageUrl: slide.imageUrl, order: slide.order });
+    setSlideData({ title: slide.title, imageUrl: slide.imageUrl, order: slide.order, linkUrl: slide.linkUrl || '' });
     setShowModal(true);
   };
 
@@ -56,6 +60,7 @@ export default function AdminSliderPage() {
     }
   };
 
+  // Form gönderme fonksiyonu linkUrl'i de içerecek şekilde çalışır
   const handleFormSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const url = editingSlide 
@@ -90,6 +95,7 @@ export default function AdminSliderPage() {
               <div className="card-body">
                 <h5 className="card-title">{slide.title}</h5>
                 <p className="card-text">Sıra: {slide.order}</p>
+                <p className="card-text text-muted" style={{fontSize: '0.8rem'}}>Link: {slide.linkUrl || 'Yok'}</p>
                 <button className="btn btn-sm btn-outline-primary me-2" onClick={() => openModalForEdit(slide)}>Düzenle</button>
                 <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(slide.id)}>Sil</button>
               </div>
@@ -115,6 +121,11 @@ export default function AdminSliderPage() {
                   <div className="mb-3">
                     <label className="form-label">Görsel URL</label>
                     <input type="text" className="form-control" value={slideData.imageUrl} onChange={e => setSlideData({...slideData, imageUrl: e.target.value})} required/>
+                  </div>
+                  {/* YENİ EKLENEN FORM ALANI */}
+                  <div className="mb-3">
+                    <label className="form-label">Link URL (Tıklanınca Gidilecek Adres)</label>
+                    <input type="text" className="form-control" placeholder="/products veya /book-appointment gibi" value={slideData.linkUrl} onChange={e => setSlideData({...slideData, linkUrl: e.target.value})} />
                   </div>
                    <div className="mb-3">
                     <label className="form-label">Sıra</label>
