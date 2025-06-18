@@ -1,9 +1,15 @@
 import { NextResponse } from 'next/server';
 import prisma from '../../../../lib/prisma';
 import bcrypt from 'bcryptjs';
+import { verifyAuth } from '../../../../lib/auth';
 
 export async function GET(request) {
   try {
+    const userPayload = await verifyAuth(request);
+    if (!userPayload || userPayload.role !== 'admin') {
+      return NextResponse.json({ error: 'Yetkisiz erişim.' }, { status: 403 });
+    }
+
     const users = await prisma.user.findMany({
       orderBy: { id: 'asc' },
     });
@@ -15,6 +21,11 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
+    const userPayload = await verifyAuth(request);
+    if (!userPayload || userPayload.role !== 'admin') {
+      return NextResponse.json({ error: 'Yetkisiz erişim.' }, { status: 403 });
+    }
+
     const { email, password, name, role } = await request.json();
 
     if (!email || !password || !name) {
