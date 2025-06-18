@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function BookAppointmentPage() {
+function BookAppointmentForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -115,5 +115,13 @@ export default function BookAppointmentPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function BookAppointmentPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <BookAppointmentForm />
+    </Suspense>
   );
 } 

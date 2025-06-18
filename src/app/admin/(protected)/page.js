@@ -1,9 +1,15 @@
-import prisma from '../../../lib/prisma'; // Düzeltilmiş import yolu
+import { prisma } from '../../../lib/prisma';
 
 async function getSlides() {
-    return prisma.slider.findMany({
-        orderBy: { order: 'asc' },
-    });
+    try {
+        const slides = await prisma.slider.findMany({
+            orderBy: { order: 'asc' },
+        });
+        return slides || [];
+    } catch (error) {
+        console.error('Error fetching slides:', error);
+        return [];
+    }
 }
 
 export default async function Home() {
@@ -12,7 +18,7 @@ export default async function Home() {
     return (
         <div>
             {/* Bootstrap Carousel */}
-            {slides.length > 0 && (
+            {slides && slides.length > 0 && (
                 <div id="main-slider" className="carousel slide mb-5" data-bs-ride="carousel">
                     <div className="carousel-indicators">
                         {slides.map((slide, index) => (
