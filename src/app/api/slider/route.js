@@ -11,9 +11,17 @@ export async function GET() {
         createdAt: 'desc',
       },
     });
+
+    if (!sliders || sliders.length === 0) {
+      return NextResponse.json([]);
+    }
+
     return NextResponse.json(sliders);
   } catch (error) {
     console.error('Failed to fetch sliders:', error);
-    return NextResponse.json({ error: 'Failed to fetch sliders' }, { status: 500 });
+    return NextResponse.json({ 
+      error: 'Failed to fetch sliders',
+      details: error.message 
+    }, { status: 500 });
   }
 }
