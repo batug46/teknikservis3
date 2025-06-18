@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
-import { verifyToken } from '@/lib/auth';
+import prisma from '../../../lib/prisma'; // <-- YOL DÜZELTİLDİ
+import { verifyToken } from '../../../lib/auth'; // <-- YOL DÜZELTİLDİ
 
 export async function POST(request) {
   const token = request.cookies.get('token')?.value;
@@ -9,10 +9,10 @@ export async function POST(request) {
   }
 
   try {
-    const data = await request.json(); // Gelen veriyi JSON olarak ayrıştır
+    // Önceki kodda bu satır eksikti, bu yüzden veriler alınamıyordu.
+    const data = await request.json(); 
     const { title, imageUrl, link } = data;
 
-    // Gerekli alanların kontrolü
     if (!title || !imageUrl) {
       return NextResponse.json({ error: 'Title and imageUrl are required' }, { status: 400 });
     }
@@ -21,7 +21,7 @@ export async function POST(request) {
       data: {
         title,
         imageUrl,
-        link: link || null, // Link boş gelirse null olarak ayarla
+        link: link || null,
       },
     });
 
