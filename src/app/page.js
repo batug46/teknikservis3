@@ -8,21 +8,16 @@ export const dynamic = 'force-dynamic';
 
 async function getSlides() {
     try {
-        const slides = await prisma.slider.findMany({
-            where: {
-                imageUrl: {
-                    not: null
-                }
-            },
-            orderBy: { order: 'asc' },
-            select: {
-                id: true,
-                title: true,
-                imageUrl: true,
-                linkUrl: true,
-                order: true
-            }
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/admin/slider`, {
+            cache: 'no-store'
         });
+        
+        if (!res.ok) {
+            console.error('Failed to fetch slides:', await res.text());
+            return [];
+        }
+
+        const slides = await res.json();
         console.log('Loaded slides:', slides); // Debug log
         return slides || [];
     } catch (error) {
