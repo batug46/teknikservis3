@@ -1,13 +1,23 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '../../../../lib/prisma';
+import prisma from '../../../../lib/prisma';
+import { verifyAuth } from '../../../../lib/auth';
 
 export async function GET(request) {
   try {
+    const userPayload = await verifyAuth(request);
+    if (!userPayload || userPayload.role !== 'admin') {
+      return NextResponse.json({ error: 'Yetkisiz erişim.' }, { status: 403 });
+    }
+
     const appointments = await prisma.appointment.findMany({
       orderBy: { date: 'desc' },
       include: {
         user: {
-          select: { name: true },
+          select: { 
+            name: true,
+            email: true,
+            phone: true
+          },
         },
       },
     });

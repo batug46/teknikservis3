@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '../../../../lib/prisma';
+import prisma from '../../../../lib/prisma';
 
 export async function GET(request, { params }) {
   try {
@@ -10,6 +10,15 @@ export async function GET(request, { params }) {
 
     const product = await prisma.product.findUnique({
       where: { id },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        price: true,
+        imageUrl: true,
+        category: true,
+        stock: true
+      }
     });
 
     if (!product) {
