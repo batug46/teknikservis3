@@ -17,6 +17,9 @@ const nextConfig = {
       // o sitenin resim alan adını buraya ekleyebilirsiniz.
     ],
   },
+  experimental: {
+    esmExternals: true,
+  },
 };
 
 module.exports = nextConfig;
