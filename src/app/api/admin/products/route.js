@@ -1,12 +1,23 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '../../../../lib/prisma';
+import prisma from '../../../../lib/prisma';
+import { verifyAuth } from '../../../../lib/auth';
 
 // GET: Tüm ürünleri listeler
 export async function GET(request) {
   try {
+    const userPayload = await verifyAuth(request);
+    if (!userPayload || userPayload.role !== 'admin') {
+      return NextResponse.json({ error: 'Yetkisiz erişim.' }, { status: 403 });
+    }
+
     const products = await prisma.product.findMany({
       orderBy: { id: 'asc' },
     });
+
+    if (!products) {
+      return NextResponse.json([], { status: 200 });
+    }
+
     return NextResponse.json(products);
   } catch (error) {
     console.error("API GET Error:", error);
@@ -17,6 +28,11 @@ export async function GET(request) {
 // POST: Yeni bir ürün veya hizmet oluşturur
 export async function POST(request) {
   try {
+    const userPayload = await verifyAuth(request);
+    if (!userPayload || userPayload.role !== 'admin') {
+      return NextResponse.json({ error: 'Yetkisiz erişim.' }, { status: 403 });
+    }
+
     const data = await request.json();
     const { name, description, price, imageUrl, category, stock } = data;
 

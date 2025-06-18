@@ -9,13 +9,21 @@ export const dynamic = 'force-dynamic';
 async function getSlides() {
     try {
         const slides = await prisma.slider.findMany({
-            orderBy: { order: 'asc' },
             where: {
                 imageUrl: {
                     not: null
                 }
+            },
+            orderBy: { order: 'asc' },
+            select: {
+                id: true,
+                title: true,
+                imageUrl: true,
+                linkUrl: true,
+                order: true
             }
         });
+        console.log('Loaded slides:', slides); // Debug log
         return slides || [];
     } catch (error) {
         console.error('Error fetching slides:', error);
@@ -25,10 +33,17 @@ async function getSlides() {
 
 export default async function Home() {
     const slides = await getSlides();
+    console.log('Rendering slides:', slides); // Debug log
 
     return (
         <div>
-            <MainSlider slides={slides} />
+            {slides && slides.length > 0 ? (
+                <MainSlider slides={slides} />
+            ) : (
+                <div className="text-center py-5">
+                    <p className="text-muted">Henüz slider eklenmemiş.</p>
+                </div>
+            )}
             
             <div className="container my-5 text-center">
                 <h2 className="mb-4">Hizmetlerimiz</h2>
