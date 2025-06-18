@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { SignJWT } from 'jose';
+import { cookies } from 'next/headers';
 import { prisma } from '../../../../lib/prisma';
 
 const JWT_SECRET = new TextEncoder().encode(
@@ -42,13 +43,15 @@ export async function POST(request) {
       user: userWithoutPassword,
     });
 
-    response.cookies.set({
+    // Set cookie using the cookies() API
+    cookies().set({
       name: 'token',
       value: token,
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
       path: '/',
-      maxAge: 60 * 60 * 24,
+      maxAge: 60 * 60 * 24, // 1 day
     });
 
     return response;
