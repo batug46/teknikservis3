@@ -19,11 +19,11 @@ export default function BookAppointmentPage() {
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
@@ -48,7 +48,7 @@ export default function BookAppointmentPage() {
       setSuccess('Randevunuz başarıyla oluşturuldu!');
       setFormData({ serviceType: '', description: '', date: '', time: '', phone: '', address: '' });
 
-    } catch (err: any) {
+    } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
@@ -116,4 +116,4 @@ export default function BookAppointmentPage() {
       </div>
     </div>
   );
-}
+} 

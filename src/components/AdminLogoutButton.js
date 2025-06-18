@@ -17,4 +17,4 @@ export default function AdminLogoutButton() {
       Çıkış Yap
     </button>
   );
-}
+} 

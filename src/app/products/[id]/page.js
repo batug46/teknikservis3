@@ -2,14 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 
-// Tipleri tanımlayalım
-interface Product { id: number; name: string; description: string | null; price: number; imageUrl: string | null; stock: number; }
-interface CartItem extends Product { quantity: number; }
-interface RatingInfo { average: number; count: number; }
-
-export default function ProductDetailPage({ params }: { params: { id: string } }) {
-  const [product, setProduct] = useState<Product | null>(null);
-  const [ratingInfo, setRatingInfo] = useState<RatingInfo | null>(null);
+export default function ProductDetailPage({ params }) {
+  const [product, setProduct] = useState(null);
+  const [ratingInfo, setRatingInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [addedToCart, setAddedToCart] = useState(false);
 
@@ -27,7 +22,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
         setProduct(await productRes.json());
         if(ratingRes.ok) setRatingInfo(await ratingRes.json());
 
-      } catch (err: any) {
+      } catch (err) {
         console.error(err);
       } finally {
         setLoading(false);
@@ -38,7 +33,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
 
   const handleAddToCart = () => {
     if (!product) return;
-    const cart: CartItem[] = JSON.parse(localStorage.getItem('cart') || '[]');
+    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
     const existingItem = cart.find(item => item.id === product.id);
     if (existingItem) existingItem.quantity += 1;
     else cart.push({ ...product, quantity: 1 });
@@ -86,4 +81,4 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
       </div>
     </div>
   );
-}
+} 

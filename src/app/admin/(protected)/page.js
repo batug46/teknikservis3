@@ -51,4 +51,4 @@ export default async function Home() {
             {/* ... Sayfanızın geri kalan içeriği burada devam edebilir ... */}
         </div>
     );
-}
+} 

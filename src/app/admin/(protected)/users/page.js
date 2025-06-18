@@ -1,20 +1,11 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, FormEvent } from 'react';
-
-// User tipine 'phone' alanı eklendi
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  role: 'admin' | 'user';
-  phone: string | null; // Telefon alanı eklendi
-}
+import React, { useState, useEffect, useCallback } from 'react';
 
 export default function AdminUsersPage() {
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState(null);
 
   const [showModal, setShowModal] = useState(false);
   const [newUser, setNewUser] = useState({ name: '', email: '', password: '', role: 'user' });
@@ -28,7 +19,7 @@ export default function AdminUsersPage() {
       if (!res.ok) throw new Error('Kullanıcılar yüklenemedi.');
       const data = await res.json();
       setUsers(data);
-    } catch (err: any) {
+    } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
@@ -39,7 +30,7 @@ export default function AdminUsersPage() {
     fetchUsers();
   }, [fetchUsers]);
 
-  const handleRoleChange = async (userId: number, newRole: string) => {
+  const handleRoleChange = async (userId, newRole) => {
     try {
       const res = await fetch(`/api/admin/users/${userId}`, {
         method: 'PUT',
@@ -48,25 +39,25 @@ export default function AdminUsersPage() {
       });
       if (!res.ok) throw new Error("Rol değiştirilemedi.");
       fetchUsers();
-    } catch (err: any) {
+    } catch (err) {
       alert(err.message);
     }
   };
 
-  const handleDelete = async (userId: number) => {
+  const handleDelete = async (userId) => {
     if (window.confirm('Bu kullanıcıyı silmek istediğinizden emin misiniz?')) {
       try {
         const res = await fetch(`/api/admin/users/${userId}`, { method: 'DELETE' });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Kullanıcı silinemedi.");
         fetchUsers();
-      } catch (err: any) {
+      } catch (err) {
         alert(err.message);
       }
     }
   };
 
-  const handleCreateUser = async (e: FormEvent) => {
+  const handleCreateUser = async (e) => {
     e.preventDefault();
     setModalError('');
     try {
@@ -80,12 +71,12 @@ export default function AdminUsersPage() {
       setShowModal(false);
       setNewUser({ name: '', email: '', password: '', role: 'user' });
       fetchUsers();
-    } catch (err: any) {
+    } catch (err) {
       setModalError(err.message);
     }
   };
   
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (e) => {
     setNewUser({ ...newUser, [e.target.name]: e.target.value });
   };
 
@@ -108,7 +99,7 @@ export default function AdminUsersPage() {
               <th>ID</th>
               <th>İsim</th>
               <th>Email</th>
-              <th>Telefon</th> {/* YENİ SÜTUN */}
+              <th>Telefon</th>
               <th>Rol</th>
               <th>İşlemler</th>
             </tr>
@@ -119,7 +110,7 @@ export default function AdminUsersPage() {
                 <td>{user.id}</td>
                 <td>{user.name}</td>
                 <td>{user.email}</td>
-                <td>{user.phone || 'Belirtilmemiş'}</td> {/* TELEFON VERİSİ */}
+                <td>{user.phone || 'Belirtilmemiş'}</td>
                 <td>
                   <select
                     className="form-select form-select-sm w-auto"
@@ -188,4 +179,4 @@ export default function AdminUsersPage() {
       )}
     </>
   );
-}
+} 

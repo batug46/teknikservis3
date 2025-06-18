@@ -1,19 +1,14 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './globals.css';
-import type { Metadata } from 'next';
-import Navbar from '../components/Navbar'; // Doğru Navbar bileşenini import ediyoruz
+import Navbar from '../components/Navbar';
 import Providers from './providers';
 
-export const metadata: Metadata = {
+export const metadata = {
   title: 'Teknoloji Mağazası',
   description: 'En yeni teknoloji ürünleri uygun fiyatlarla',
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }) {
   return (
     <html lang="tr">
       <body>
@@ -32,4 +27,4 @@ export default function RootLayout({
       </body>
     </html>
   );
-}
+} 

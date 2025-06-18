@@ -2,11 +2,7 @@ import Link from 'next/link';
 import React from 'react';
 import AdminLogoutButton from '../../../components/AdminLogoutButton';
 
-export default function ProtectedAdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function ProtectedAdminLayout({ children }) {
   return (
     <div className="container-fluid">
       <div className="row">
@@ -61,4 +57,4 @@ export default function ProtectedAdminLayout({
       </div>
     </div>
   );
-}
+} 

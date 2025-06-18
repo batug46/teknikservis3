@@ -2,17 +2,8 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 
-interface Message {
-  id: number;
-  name: string;
-  email: string;
-  message: string;
-  status: 'read' | 'unread';
-  createdAt: string;
-}
-
 export default function AdminContactMessagesPage() {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const fetchMessages = useCallback(async () => {
@@ -52,4 +43,4 @@ export default function AdminContactMessagesPage() {
       </div>
     </>
   );
-}
+} 

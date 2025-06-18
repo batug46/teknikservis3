@@ -3,20 +3,9 @@
 import React from 'react';
 import Link from 'next/link';
 
-interface Slide {
-  id: number;
-  title: string;
-  imageUrl: string;
-  linkUrl: string | null;
-}
-
-interface MainSliderProps {
-  slides: Slide[];
-}
-
-export default function MainSlider({ slides }: MainSliderProps) {
+export default function MainSlider({ slides }) {
   
-  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+  const handleImageError = (e) => {
     e.currentTarget.src = 'https://placehold.co/1200x500.png?text=Gorsel+Bulunamadi';
   };
 
@@ -56,4 +45,4 @@ export default function MainSlider({ slides }: MainSliderProps) {
       )}
     </div>
   );
-}
+} 

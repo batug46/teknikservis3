@@ -1,15 +1,10 @@
 'use client';
 
-import React, { useState, useEffect, FormEvent } from 'react';
-
-// Gerekli tipleri tanımlayalım
-interface User { id: number; name: string; email: string; phone: string | null; address: string | null; }
-interface OrderItem { id: number; rating: number | null; product: { name: string; }; }
-interface Order { id: number; createdAt: string; total: number; status: string; items: OrderItem[]; }
+import React, { useState, useEffect } from 'react';
 
 export default function ProfilePage() {
-  const [user, setUser] = useState<User | null>(null);
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [user, setUser] = useState(null);
+  const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Form state'leri
@@ -20,11 +15,11 @@ export default function ProfilePage() {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [message, setMessage] = useState({ type: '', text: '' });
-  
+
   // Puanlama modal'ı için state'ler
   const [showRatingModal, setShowRatingModal] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [ratings, setRatings] = useState<{ [key: string]: string }>({});
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [ratings, setRatings] = useState({});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -49,10 +44,9 @@ export default function ProfilePage() {
     fetchData();
   }, []);
 
-  const handleUpdateProfile = async (e: React.FormEvent) => {
+  const handleUpdateProfile = async (e) => {
     e.preventDefault();
     setMessage({ type: '', text: '' });
-
     if (newPassword && !currentPassword) {
       setMessage({ type: 'danger', text: 'Yeni şifre belirlemek için mevcut şifrenizi girmelisiniz.' });
       return;
@@ -71,27 +65,27 @@ export default function ProfilePage() {
       setMessage({ type: 'success', text: 'Profiliniz başarıyla güncellendi.' });
       setCurrentPassword('');
       setNewPassword('');
-    } catch (err: any) {
+    } catch (err) {
       setMessage({ type: 'danger', text: err.message });
     }
   };
   
-  const openRatingModal = (order: Order) => {
+  const openRatingModal = (order) => {
     if (!order || !order.items) return;
     setSelectedOrder(order);
     const initialRatings = order.items.reduce((acc, item) => {
       acc[item.id] = String(item.rating || "0");
       return acc;
-    }, {} as { [key: string]: string });
+    }, {});
     setRatings(initialRatings);
     setShowRatingModal(true);
   };
 
-  const handleRatingChange = (orderItemId: number, rating: string) => {
+  const handleRatingChange = (orderItemId, rating) => {
     setRatings(prev => ({ ...prev, [orderItemId]: rating }));
   };
   
-  const handleRatingSubmit = async (e: FormEvent) => {
+  const handleRatingSubmit = async (e) => {
     e.preventDefault();
     if (!selectedOrder) return;
     for (const orderItemId in ratings) {
@@ -168,7 +162,11 @@ export default function ProfilePage() {
                   <table className="table mt-3">
                       <thead>
                       <tr>
-                          <th>Sipariş ID</th><th>Tarih</th><th>Tutar</th><th>Durum</th><th>İşlem</th>
+                          <th>Sipariş ID</th>
+                          <th>Tarih</th>
+                          <th>Tutar</th>
+                          <th>Durum</th>
+                          <th>İşlem</th>
                       </tr>
                       </thead>
                       <tbody>

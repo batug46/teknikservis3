@@ -27,14 +27,11 @@ export default function RegisterPage() {
     try {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: adSoyad, adSoyad, email, password }),
       });
 
       const data = await res.json();
-
       if (!res.ok) {
         throw new Error(data.error || 'Kayıt işlemi başarısız oldu.');
       }
@@ -46,12 +43,7 @@ export default function RegisterPage() {
       }, 2000);
 
     } catch (err) {
-      // Hata mesajını daha güvenli bir şekilde yakalıyoruz.
-      if (err instanceof Error) {
-        setMessage({ type: 'danger', text: err.message });
-      } else {
-        setMessage({ type: 'danger', text: 'Bilinmeyen bir hata oluştu.' });
-      }
+      setMessage({ type: 'danger', text: err.message });
       setLoading(false);
     }
   };
@@ -63,13 +55,7 @@ export default function RegisterPage() {
           <div className="card shadow-sm">
             <div className="card-body p-4">
               <h2 className="text-center mb-4">Kayıt Ol</h2>
-              
-              {message.text && (
-                <div className={`alert alert-${message.type}`} role="alert">
-                  {message.text}
-                </div>
-              )}
-
+              {message.text && <div className={`alert alert-${message.type}`} role="alert">{message.text}</div>}
               <form onSubmit={handleSubmit}>
                 <div className="mb-3">
                   <label htmlFor="name" className="form-label">Ad Soyad</label>

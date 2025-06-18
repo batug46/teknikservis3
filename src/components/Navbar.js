@@ -5,20 +5,19 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
 export default function Navbar() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState(null);
   const [cartCount, setCartCount] = useState(0);
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     setIsMounted(true);
     
-    // Bu fonksiyon, localStorage'dan veriyi okuyup state'i günceller.
-    const handleAuthStateChange = () => {
+    const handleStateChange = () => {
       try {
         const storedUser = localStorage.getItem('user');
         setUser(storedUser ? JSON.parse(storedUser) : null);
-
         const cart = JSON.parse(localStorage.getItem('cart') || '[]');
         setCartCount(cart.length);
       } catch (error) {
@@ -28,29 +27,22 @@ export default function Navbar() {
       }
     };
     
-    // Sayfa ilk yüklendiğinde ve diğer sekmelerde bir değişiklik olduğunda çalışır.
-    window.addEventListener('storage', handleAuthStateChange);
-    // Giriş/Çıkış gibi olaylardan sonra tetiklenecek özel event'imizi dinler.
-    window.addEventListener('authChange', handleAuthStateChange);
+    window.addEventListener('storage', handleStateChange);
+    window.addEventListener('authChange', handleStateChange);
 
-    // Bileşen ilk yüklendiğinde durumu kontrol et.
-    handleAuthStateChange();
+    handleStateChange();
 
-    // Listener'ları temizle
     return () => {
-      window.removeEventListener('storage', handleAuthStateChange);
-      window.removeEventListener('authChange', handleAuthStateChange);
+      window.removeEventListener('storage', handleStateChange);
+      window.removeEventListener('authChange', handleStateChange);
     };
-  }, []);
+  }, [pathname]);
 
   const handleLogout = () => {
     localStorage.removeItem('user');
     localStorage.removeItem('cart');
     fetch('/api/auth/logout', { method: 'POST' });
-    
-    // Çıkış yapıldığında authChange event'ini tetikle, böylece navbar anında güncellenir.
     window.dispatchEvent(new Event('authChange'));
-    
     router.push('/');
   };
 
@@ -106,31 +98,40 @@ export default function Navbar() {
               </Link>
             </li>
             {user ? (
-              <>
-                {user.role === 'admin' && (
-                  <li className="nav-item">
-                    <Link href="/admin" className="nav-link fw-bold text-danger">
-                      Admin Paneli
+              // KULLANICI GİRİŞ YAPMIŞSA:
+              <li className="nav-item dropdown">
+                <a className="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i className="bi bi-person-circle me-1"></i>
+                  {user.name}
+                </a>
+                <ul className="dropdown-menu dropdown-menu-end">
+                  {user.role === 'admin' && (
+                    <li>
+                      <Link className="dropdown-item" href="/admin">
+                        Admin Paneli
+                      </Link>
+                    </li>
+                  )}
+                   <li>
+                    <Link className="dropdown-item" href="/messages">
+                      Mesajlarım
                     </Link>
                   </li>
-                )}
-                <li className="nav-item">
-                  <Link href="/messages" className="nav-link">
-                    Mesajlarım
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link href="/profile" className="nav-link">
-                    Profilim
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <button onClick={handleLogout} className="nav-link btn btn-link">
-                    Çıkış Yap
-                  </button>
-                </li>
-              </>
+                  <li>
+                    <Link className="dropdown-item" href="/profile">
+                      Profilim
+                    </Link>
+                  </li>
+                  <li><hr className="dropdown-divider" /></li>
+                  <li>
+                    <button onClick={handleLogout} className="dropdown-item">
+                      Çıkış Yap
+                    </button>
+                  </li>
+                </ul>
+              </li>
             ) : (
+              // KULLANICI GİRİŞ YAPMAMIŞSA:
               <>
                 <li className="nav-item">
                   <Link href="/login" className="nav-link">

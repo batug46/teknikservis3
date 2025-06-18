@@ -2,14 +2,10 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 
-// Tiplere yeni alanlar eklendi
-interface OrderItem { id: number; rating: number | null; product: { name: string; }; quantity: number; }
-interface Order { id: number; total: number; status: string; createdAt: string; user: { name: string | null; }; items: OrderItem[]; phone: string | null; address: string | null; }
-
 export default function AdminOrdersPage() {
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState(null);
 
   const fetchOrders = useCallback(async () => {
     const res = await fetch('/api/admin/orders');
@@ -86,4 +82,4 @@ export default function AdminOrdersPage() {
       )}
     </>
   );
-}
+} 

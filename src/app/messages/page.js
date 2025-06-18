@@ -1,28 +1,14 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, FormEvent } from 'react';
-
-// Tipleri tanımlayalım
-interface Message {
-  id: number;
-  subject: string;
-  body: string;
-  createdAt: string;
-  sender: { name: string } | null; // Gönderen null olabilir
-  recipient: { name: string } | null; // Alıcı null olabilir
-}
-interface User {
-  id: number;
-  name: string;
-}
+import React, { useState, useEffect, useCallback } from 'react';
 
 export default function MessagesPage() {
   const [activeTab, setActiveTab] = useState('inbox');
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   
   const [showModal, setShowModal] = useState(false);
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState([]);
   const [newMessage, setNewMessage] = useState({ recipientId: '', subject: '', body: '' });
 
   const fetchMessages = useCallback(async () => {
@@ -54,7 +40,7 @@ export default function MessagesPage() {
     }
   };
 
-  const handleSendMessage = async (e: FormEvent) => {
+  const handleSendMessage = async (e) => {
     e.preventDefault();
     await fetch('/api/messages', {
         method: 'POST',
@@ -98,7 +84,6 @@ export default function MessagesPage() {
                   </div>
                   <p className="mb-1">{msg.body}</p>
                   <small className="text-muted">
-                    {/* DÜZELTME: Opsiyonel zincirleme (?.) ve null kontrolü eklendi */}
                     {activeTab === 'inbox' 
                       ? `Gönderen: ${msg.sender?.name || 'Bilinmeyen Kullanıcı'}` 
                       : `Alıcı: ${msg.recipient?.name || 'Bilinmeyen Kullanıcı'}`
@@ -148,4 +133,4 @@ export default function MessagesPage() {
       )}
     </div>
   );
-}
+} 

@@ -8,7 +8,7 @@ export default function AdminLoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
@@ -30,7 +30,7 @@ export default function AdminLoginPage() {
       // Admin paneline yönlendir
       window.location.href = '/admin';
 
-    } catch (err: any) {
+    } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
@@ -62,4 +62,4 @@ export default function AdminLoginPage() {
       </div>
     </div>
   );
-}
+} 

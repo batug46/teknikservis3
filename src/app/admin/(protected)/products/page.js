@@ -1,22 +1,13 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, FormEvent } from 'react';
-
-interface Product {
-  id: number;
-  name: string;
-  price: number;
-  imageUrl: string | null;
-  category: string;
-  stock: number;
-}
+import React, { useState, useEffect, useCallback } from 'react';
 
 export default function AdminProductsPage() {
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   
   const [showModal, setShowModal] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [editingProduct, setEditingProduct] = useState(null);
   const [productData, setProductData] = useState({ name: '', description: '', price: 0, imageUrl: '', category: 'servis', stock: 0 });
 
   const fetchProducts = useCallback(async () => {
@@ -37,20 +28,20 @@ export default function AdminProductsPage() {
     setShowModal(true);
   };
 
-  const openModalForEdit = (product: Product) => {
+  const openModalForEdit = (product) => {
     setEditingProduct(product);
-    setProductData(product as any);
+    setProductData(product);
     setShowModal(true);
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id) => {
     if (window.confirm('Bu ürünü silmek istediğinizden emin misiniz?')) {
       await fetch(`/api/admin/products/${id}`, { method: 'DELETE' });
       fetchProducts();
     }
   };
 
-  const handleFormSubmit = async (e: FormEvent) => {
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
     const url = editingProduct ? `/api/admin/products/${editingProduct.id}` : '/api/admin/products';
     const method = editingProduct ? 'PUT' : 'POST';
@@ -155,4 +146,4 @@ export default function AdminProductsPage() {
       )}
     </>
   );
-}
+} 

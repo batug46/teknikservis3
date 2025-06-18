@@ -1,23 +1,13 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, FormEvent } from 'react';
-
-// Interface'e linkUrl eklendi
-interface Slide {
-  id: number;
-  title: string;
-  imageUrl: string;
-  order: number;
-  linkUrl: string | null; 
-}
+import React, { useState, useEffect, useCallback } from 'react';
 
 export default function AdminSliderPage() {
-  const [slides, setSlides] = useState<Slide[]>([]);
+  const [slides, setSlides] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  // Modal state'leri ve başlangıç değeri güncellendi
   const [showModal, setShowModal] = useState(false);
-  const [editingSlide, setEditingSlide] = useState<Slide | null>(null);
+  const [editingSlide, setEditingSlide] = useState(null);
   const [slideData, setSlideData] = useState({ title: '', imageUrl: '', order: 0, linkUrl: '' });
 
   const fetchSlides = useCallback(async () => {
@@ -39,29 +29,26 @@ export default function AdminSliderPage() {
     fetchSlides();
   }, [fetchSlides]);
 
-  // Yeni slide oluşturma modal'ı için başlangıç değerleri güncellendi
   const openModalForCreate = () => {
     setEditingSlide(null);
     setSlideData({ title: '', imageUrl: '', order: 0, linkUrl: '' });
     setShowModal(true);
   };
 
-  // Düzenleme modal'ı için linkUrl alanı eklendi
-  const openModalForEdit = (slide: Slide) => {
+  const openModalForEdit = (slide) => {
     setEditingSlide(slide);
     setSlideData({ title: slide.title, imageUrl: slide.imageUrl, order: slide.order, linkUrl: slide.linkUrl || '' });
     setShowModal(true);
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id) => {
     if (window.confirm('Bu slide\'ı silmek istediğinizden emin misiniz?')) {
       await fetch(`/api/admin/slider/${id}`, { method: 'DELETE' });
       fetchSlides();
     }
   };
 
-  // Form gönderme fonksiyonu linkUrl'i de içerecek şekilde çalışır
-  const handleFormSubmit = async (e: FormEvent) => {
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
     const url = editingSlide 
       ? `/api/admin/slider/${editingSlide.id}` 
@@ -122,7 +109,6 @@ export default function AdminSliderPage() {
                     <label className="form-label">Görsel URL</label>
                     <input type="text" className="form-control" value={slideData.imageUrl} onChange={e => setSlideData({...slideData, imageUrl: e.target.value})} required/>
                   </div>
-                  {/* YENİ EKLENEN FORM ALANI */}
                   <div className="mb-3">
                     <label className="form-label">Link URL (Tıklanınca Gidilecek Adres)</label>
                     <input type="text" className="form-control" placeholder="/products veya /book-appointment gibi" value={slideData.linkUrl} onChange={e => setSlideData({...slideData, linkUrl: e.target.value})} />
@@ -143,4 +129,4 @@ export default function AdminSliderPage() {
       )}
     </>
   );
-}
+} 

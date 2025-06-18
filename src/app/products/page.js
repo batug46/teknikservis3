@@ -4,24 +4,10 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
-// Tipleri tanımlayalım
-interface Product {
-  id: number;
-  name: string;
-  description: string | null;
-  price: number;
-  imageUrl: string | null;
-  stock: number;
-  category: string;
-}
-interface CartItem extends Product {
-  quantity: number;
-}
-
 export default function ProductsPage() {
-  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [allProducts, setAllProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [addedToCart, setAddedToCart] = useState<number | null>(null);
+  const [addedToCart, setAddedToCart] = useState(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -31,7 +17,7 @@ export default function ProductsPage() {
         if (!res.ok) throw new Error('Ürünler yüklenemedi.');
         const data = await res.json();
         setAllProducts(data);
-      } catch (err: any) {
+      } catch (err) {
         console.error(err);
       } finally {
         setLoading(false);
@@ -41,13 +27,13 @@ export default function ProductsPage() {
   }, []);
 
   // Randevu Al fonksiyonu
-  const handleBookAppointment = (serviceName: string) => {
+  const handleBookAppointment = (serviceName) => {
     router.push(`/book-appointment?service=${encodeURIComponent(serviceName)}`);
   };
 
   // Sepete Ekle fonksiyonu
-  const handleAddToCart = (productToAdd: Product) => {
-    const cart: CartItem[] = JSON.parse(localStorage.getItem('cart') || '[]');
+  const handleAddToCart = (productToAdd) => {
+    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
     const existingItem = cart.find(item => item.id === productToAdd.id);
     if (existingItem) {
       existingItem.quantity += 1;
@@ -135,4 +121,4 @@ export default function ProductsPage() {
       </div>
     </div>
   );
-}
+} 

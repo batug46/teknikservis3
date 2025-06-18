@@ -10,4 +10,4 @@ export async function POST(request) {
   const data = await request.json();
   const slide = await prisma.slider.create({ data });
   return NextResponse.json(slide, { status: 201 });
-}
+} 

@@ -4,12 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
-interface CartItem {
-  id: number; name: string; price: number; quantity: number; stock: number;
-}
-
 export default function CartPage() {
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [cart, setCart] = useState([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
   const router = useRouter();
@@ -18,13 +14,13 @@ export default function CartPage() {
     setCart(JSON.parse(localStorage.getItem('cart') || '[]'));
   }, []);
 
-  const updateCart = (newCart: CartItem[]) => {
+  const updateCart = (newCart) => {
     setCart(newCart);
     localStorage.setItem('cart', JSON.stringify(newCart));
     window.dispatchEvent(new Event('storage'));
   };
 
-  const handleQuantityChange = (productId: number, change: number) => {
+  const handleQuantityChange = (productId, change) => {
     const newCart = cart.map(item => {
       if (item.id === productId) {
         const newQuantity = item.quantity + change;
@@ -37,7 +33,7 @@ export default function CartPage() {
     updateCart(newCart);
   };
 
-  const handleRemoveItem = (productId: number) => {
+  const handleRemoveItem = (productId) => {
     updateCart(cart.filter(item => item.id !== productId));
   };
 
@@ -63,7 +59,7 @@ export default function CartPage() {
       setMessage({ type: 'success', text: 'Siparişiniz başarıyla oluşturuldu!' });
       updateCart([]);
 
-    } catch (err: any) {
+    } catch (err) {
       setMessage({ type: 'danger', text: err.message });
     } finally {
       setLoading(false);
@@ -125,4 +121,4 @@ export default function CartPage() {
       )}
     </div>
   );
-}
+} 

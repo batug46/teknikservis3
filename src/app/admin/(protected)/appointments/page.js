@@ -2,21 +2,8 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 
-// Gelen verinin tipini tanımlayalım
-interface Appointment {
-  id: number;
-  serviceType: string;
-  date: string;
-  time: string;
-  status: string;
-  user: { name: string | null };
-  price: number;
-  phone: string | null;
-  address: string | null;
-}
-
 export default function AdminAppointmentsPage() {
-    const [appointments, setAppointments] = useState<Appointment[]>([]);
+    const [appointments, setAppointments] = useState([]);
     const [loading, setLoading] = useState(true);
 
     const fetchAppointments = useCallback(async () => {
@@ -37,7 +24,7 @@ export default function AdminAppointmentsPage() {
         fetchAppointments();
     }, [fetchAppointments]);
 
-    const handleStatusChange = async (id: number, status: string) => {
+    const handleStatusChange = async (id, status) => {
       try {
         await fetch(`/api/admin/appointments/${id}`, {
           method: 'PUT',
@@ -51,7 +38,7 @@ export default function AdminAppointmentsPage() {
     };
 
     // YENİ SİLME FONKSİYONU
-    const handleDelete = async (id: number) => {
+    const handleDelete = async (id) => {
         if (window.confirm('Bu randevuyu kalıcı olarak silmek istediğinizden emin misiniz?')) {
             try {
                 await fetch(`/api/admin/appointments/${id}`, { method: 'DELETE' });
@@ -79,7 +66,7 @@ export default function AdminAppointmentsPage() {
                             <th>Tarih</th>
                             <th>Saat</th>
                             <th>Durum</th>
-                            <th>İşlemler</th> {/* YENİ SÜTUN */}
+                            <th>İşlemler</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -105,7 +92,6 @@ export default function AdminAppointmentsPage() {
                                   </select>
                                 </td>
                                 <td>
-                                  {/* GÜNCELLENMİŞ SİLME BUTONU */}
                                   <button 
                                     className="btn btn-sm btn-outline-danger"
                                     onClick={() => handleDelete(appt.id)}
@@ -120,4 +106,4 @@ export default function AdminAppointmentsPage() {
             </div>
         </>
     );
-}
+} 

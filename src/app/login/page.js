@@ -1,6 +1,6 @@
-'use client';
+ 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -11,7 +11,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
@@ -28,17 +28,14 @@ export default function LoginPage() {
         throw new Error(data.error || 'Giriş işlemi başarısız oldu.');
       }
 
-      // Kullanıcı bilgisini tarayıcıya kaydet
       localStorage.setItem('user', JSON.stringify(data.user));
-      // Navbar'ı güncellemesi için haber ver
       window.dispatchEvent(new Event('authChange'));
 
-      // Kullanıcıyı ana sayfaya yönlendir
-      router.push('/');
+      const redirectUrl = data.user?.role === 'admin' ? '/admin' : '/';
+      router.push(redirectUrl);
       
-    } catch (err: any) {
+    } catch (err) {
       setError(err.message);
-    } finally {
       setLoading(false);
     }
   };
@@ -50,7 +47,7 @@ export default function LoginPage() {
           <div className="card">
             <div className="card-body p-4">
               <h2 className="text-center mb-4">Giriş Yap</h2>
-              {error && <div className="alert alert-danger">{error}</div>}
+              {error && <div className="alert alert-danger" role="alert">{error}</div>}
               <form onSubmit={handleSubmit}>
                 <div className="mb-3">
                   <label htmlFor="email" className="form-label">E-posta</label>
@@ -61,6 +58,7 @@ export default function LoginPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
+                    disabled={loading}
                   />
                 </div>
                 <div className="mb-3">
@@ -72,6 +70,7 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    disabled={loading}
                   />
                 </div>
                 <div className="d-grid mt-4">

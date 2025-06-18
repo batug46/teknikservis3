@@ -7,11 +7,11 @@ export default function ContactPage() {
   const [status, setStatus] = useState({ type: '', text: '' });
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setStatus({ type: '', text: '' });
@@ -28,7 +28,7 @@ export default function ContactPage() {
       
       setStatus({ type: 'success', text: 'Mesajınız başarıyla gönderildi!' });
       setFormData({ name: '', email: '', subject: '', message: '' }); // Formu temizle
-    } catch (err: any) {
+    } catch (err) {
       setStatus({ type: 'danger', text: err.message });
     } finally {
       setLoading(false);
@@ -97,4 +97,4 @@ export default function ContactPage() {
       </div>
     </div>
   );
-}
+} 
