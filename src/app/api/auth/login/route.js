@@ -2,10 +2,11 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { SignJWT } from 'jose';
 import { cookies } from 'next/headers';
-import { prisma } from '../../../../lib/prisma';
+import prisma from '../../../../lib/prisma';
 
+// JWT secret should be at least 32 bytes long for HS256
 const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || 'your-super-secret-key-that-is-long-enough'
+  process.env.JWT_SECRET || 'default-secret-key-that-is-at-least-32-characters'
 );
 
 export async function POST(request) {
@@ -15,7 +16,18 @@ export async function POST(request) {
       return NextResponse.json({ error: 'E-posta ve şifre zorunludur.' }, { status: 400 });
     }
 
-    const user = await prisma.user.findUnique({ where: { email } });
+    const user = await prisma.user.findUnique({ 
+      where: { email },
+      select: {
+        id: true,
+        email: true,
+        password: true,
+        name: true,
+        role: true,
+        adSoyad: true
+      }
+    });
+
     if (!user) {
       return NextResponse.json({ error: 'Geçersiz e-posta veya şifre.' }, { status: 401 });
     }
@@ -57,6 +69,9 @@ export async function POST(request) {
     return response;
   } catch (error) {
     console.error('Giriş API Hatası:', error);
-    return NextResponse.json({ error: 'Sunucu hatası.' }, { status: 500 });
+    return NextResponse.json({ 
+      error: 'Sunucu hatası.',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined 
+    }, { status: 500 });
   }
 }
