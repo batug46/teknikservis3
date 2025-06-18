@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-// Diğer dosyalarınızdaki doğru yolları buraya uyguladım:
+// Projenizdeki diğer çalışan dosyalardan alınan doğru yollar:
 import prisma from '../../../../lib/prisma';
 import { verifyToken } from '../../../../lib/auth';
 
@@ -14,7 +14,7 @@ export async function POST(request) {
     const { title, imageUrl, link } = data;
 
     if (!title || !imageUrl) {
-      return NextResponse.json({ error: 'Başlık ve resim URLsi zorunludur' }, { status: 400 });
+      return NextResponse.json({ error: 'Başlık ve Resim URLsi zorunludur' }, { status: 400 });
     }
 
     const newSlider = await prisma.slider.create({
@@ -28,7 +28,8 @@ export async function POST(request) {
     return NextResponse.json(newSlider, { status: 201 });
   } catch (error) {
     console.error('Slider oluşturma hatası:', error);
-    return NextResponse.json({ error: 'Slider oluşturulamadı' }, { status: 500 });
+    // İstemciye daha anlamlı bir hata mesajı gönder
+    return NextResponse.json({ error: 'Sunucu hatası: Slider oluşturulamadı.' }, { status: 500 });
   }
 }
 
@@ -46,6 +47,7 @@ export async function GET(request) {
         });
         return NextResponse.json(sliders);
     } catch (error) {
-        return NextResponse.json({ error: 'Sliderlar alınamadı' }, { status: 500 });
+        console.error('Slider listeleme hatası:', error);
+        return NextResponse.json({ error: 'Sunucu hatası: Sliderlar alınamadı.' }, { status: 500 });
     }
 }

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-// Diğer dosyalarınızdaki doğru yolu buraya uyguladım:
+// Projenizdeki diğer çalışan dosyalardan alınan doğru yol:
 import prisma from '../../../lib/prisma';
 
 // Vercel'in eski veriyi önbellekten getirmesini engeller.
