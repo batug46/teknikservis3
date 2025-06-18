@@ -1,13 +1,19 @@
-import prisma from '../lib/prisma';
+import { prisma } from '../lib/prisma';
 import MainSlider from '../components/MainSlider';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
 async function getSlides() {
-    return prisma.slider.findMany({
-        orderBy: { order: 'asc' },
-    });
+    try {
+        const slides = await prisma.slider.findMany({
+            orderBy: { order: 'asc' },
+        });
+        return slides || [];
+    } catch (error) {
+        console.error('Error fetching slides:', error);
+        return [];
+    }
 }
 
 export default async function Home() {
