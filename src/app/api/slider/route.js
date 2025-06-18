@@ -1,24 +1,18 @@
 import { NextResponse } from 'next/server';
-import prisma from '../../../lib/prisma';
+import prisma from '@/lib/prisma';
+
+export const dynamic = 'force-dynamic'; // Bu satırı ekleyin
 
 export async function GET() {
   try {
-    const slides = await prisma.slider.findMany({
-      where: {
-        imageUrl: {
-          not: null,
-        },
+    const sliders = await prisma.slider.findMany({
+      orderBy: {
+        createdAt: 'desc',
       },
-      orderBy: { order: 'asc' },
     });
-
-    if (!slides) {
-      return NextResponse.json([], { status: 200 });
-    }
-
-    return NextResponse.json(slides);
+    return NextResponse.json(sliders);
   } catch (error) {
-    console.error("Slider API Error:", error);
-    return NextResponse.json({ error: 'Sunucu hatası' }, { status: 500 });
+    console.error('Failed to fetch sliders:', error);
+    return NextResponse.json({ error: 'Failed to fetch sliders' }, { status: 500 });
   }
-} 
+}

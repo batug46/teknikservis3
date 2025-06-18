@@ -1,48 +1,79 @@
 'use client';
 
-import React from 'react';
+import { useState, useEffect } from 'react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Pagination, Autoplay } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+import 'swiper/css/autoplay';
+import Image from 'next/image';
 import Link from 'next/link';
 
-export default function MainSlider({ slides }) {
-  
-  const handleImageError = (e) => {
-    e.currentTarget.src = 'https://placehold.co/1200x500.png?text=Gorsel+Bulunamadi';
-  };
+const MainSlider = () => {
+  const [sliders, setSliders] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  if (slides.length === 0) {
-    return null;
+  useEffect(() => {
+    const fetchSliders = async () => {
+      try {
+        const res = await fetch('/api/slider'); // Veriyi API'den çek
+        if (!res.ok) {
+          throw new Error('Failed to fetch sliders');
+        }
+        const data = await res.json();
+        setSliders(data);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSliders();
+  }, []); // Sadece bileşen yüklendiğinde bir kez çalışır
+
+  if (loading) {
+    return <div>Yükleniyor...</div>;
   }
 
   return (
-    <div id="main-slider" className="carousel slide mb-5" data-bs-ride="carousel">
-      <div className="carousel-inner">
-        {slides.map((slide, index) => (
-          <div key={slide.id} className={`carousel-item ${index === 0 ? 'active' : ''}`}>
-            <Link href={slide.linkUrl || '#'}>
-                <img 
-                  src={slide.imageUrl} 
-                  className="d-block w-100" 
-                  alt={slide.title} 
-                  style={{ maxHeight: '500px', objectFit: 'cover', cursor: 'pointer' }}
-                  onError={handleImageError}
-                />
-                <div className="carousel-caption d-none d-md-block">
-                  <h5>{slide.title}</h5>
-                </div>
-            </Link>
-          </div>
+    <div className="relative h-96">
+      <Swiper
+        modules={[Navigation, Pagination, Autoplay]}
+        spaceBetween={50}
+        slidesPerView={1}
+        navigation
+        pagination={{ clickable: true }}
+        autoplay={{ delay: 3000 }}
+        loop={true}
+      >
+        {sliders.map((slide) => (
+          <SwiperSlide key={slide.id}>
+            <div className="relative w-full h-96">
+              <Image
+                src={slide.imageUrl}
+                alt={slide.title}
+                layout="fill"
+                objectFit="cover"
+                priority
+              />
+              <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col justify-center items-center text-white p-4">
+                <h2 className="text-4xl font-bold mb-4">{slide.title}</h2>
+                {slide.link && (
+                  <Link href={slide.link} legacyBehavior>
+                    <a className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                      Daha Fazla Bilgi
+                    </a>
+                  </Link>
+                )}
+              </div>
+            </div>
+          </SwiperSlide>
         ))}
-      </div>
-      {slides.length > 1 && (
-        <>
-          <button className="carousel-control-prev" type="button" data-bs-target="#main-slider" data-bs-slide="prev">
-            <span className="carousel-control-prev-icon" aria-hidden="true"></span>
-          </button>
-          <button className="carousel-control-next" type="button" data-bs-target="#main-slider" data-bs-slide="next">
-            <span className="carousel-control-next-icon" aria-hidden="true"></span>
-          </button>
-        </>
-      )}
+      </Swiper>
     </div>
   );
-} 
+};
+
+export default MainSlider;
