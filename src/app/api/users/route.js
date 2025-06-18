@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
-import { verifyAuth } from '@/lib/auth';
+import { prisma } from '../../../lib/prisma';
+import { verifyAuth } from '../../../lib/auth';
 
 // Tüm kullanıcıları listeler (mesaj göndermek için)
 export async function GET(request) {
