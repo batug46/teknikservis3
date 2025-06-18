@@ -3,17 +3,30 @@ import { NextResponse } from 'next/server';
 import prisma from '../../../../../lib/prisma';
 import { verifyToken } from '../../../../../lib/auth';
 
-export async function DELETE(request, { params }) {
-    if (!verifyToken(request.cookies.get('token')?.value)) {
-        return NextResponse.json({ error: 'Yetkisiz Erişim' }, { status: 401 });
-    }
-    try {
-        const id = parseInt(params.id);
-        if (isNaN(id)) return NextResponse.json({ error: 'Geçersiz ID formatı' }, { status: 400 });
+export const dynamic = 'force-dynamic';
 
-        await prisma.slider.delete({ where: { id } });
+export async function DELETE(request, { params }) {
+    try {
+        const token = request.cookies.get('token')?.value;
+        const isAdmin = await verifyToken(token);
+        
+        if (!isAdmin) {
+            return NextResponse.json({ error: 'Yetkisiz Erişim' }, { status: 401 });
+        }
+
+        const { id } = params;
+        
+        const slider = await prisma.slider.delete({
+            where: { id: parseInt(id) }
+        });
+
+        if (!slider) {
+            return NextResponse.json({ error: 'Slider bulunamadı' }, { status: 404 });
+        }
+
         return NextResponse.json({ message: 'Slider başarıyla silindi' });
     } catch (error) {
-        return NextResponse.json({ error: 'Sunucu Hatası: Slider silinemedi.' }, { status: 500 });
+        console.error('Slider deletion error:', error);
+        return NextResponse.json({ error: 'Slider silinemedi' }, { status: 500 });
     }
 }
