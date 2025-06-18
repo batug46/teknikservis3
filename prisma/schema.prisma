@@ -105,10 +105,9 @@ model Slider {
   id        Int      @id @default(autoincrement())
   title     String
   imageUrl  String
-  link      String?  // YENİ ALAN: Tıklanacak link (isteğe bağlı)
-  order     Int      @default(0)
+  link      String?
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @updatedAt // <-- BU SATIRI EKLEYİN
 }
 
 model ServiceRecord {
