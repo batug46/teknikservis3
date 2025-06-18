@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import prisma from '../../../../lib/prisma';
+import { prisma } from '../../../../lib/prisma';
 
 // GET: Tüm ürünleri listeler
 export async function GET(request) {
@@ -20,7 +20,7 @@ export async function POST(request) {
     const data = await request.json();
     const { name, description, price, imageUrl, category, stock } = data;
 
-    if (!name || !price === undefined || !category) {
+    if (!name || price === undefined || !category) {
       return NextResponse.json({ error: 'İsim, fiyat ve kategori zorunludur.' }, { status: 400 });
     }
 
@@ -31,7 +31,7 @@ export async function POST(request) {
         price: parseFloat(price),
         imageUrl,
         category,
-        stock: parseInt(stock),
+        stock: parseInt(stock) || 0,
       },
     });
     return NextResponse.json(product, { status: 201 });
