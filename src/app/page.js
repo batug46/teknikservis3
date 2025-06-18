@@ -1,13 +1,20 @@
-import { prisma } from '../lib/prisma';
+import prisma from '../lib/prisma';
 import MainSlider from '../components/MainSlider';
 import Link from 'next/link';
 
+// Force dynamic rendering and disable caching
+export const revalidate = 0;
 export const dynamic = 'force-dynamic';
 
 async function getSlides() {
     try {
         const slides = await prisma.slider.findMany({
             orderBy: { order: 'asc' },
+            where: {
+                imageUrl: {
+                    not: null
+                }
+            }
         });
         return slides || [];
     } catch (error) {
