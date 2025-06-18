@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import prisma from '../../../lib/prisma'; // <-- YOL DÜZELTİLDİ
-import { verifyToken } from '../../../lib/auth'; // <-- YOL DÜZELTİLDİ
+import prisma from '../../../../lib/prisma';
+import { verifyToken } from '../../../../lib/auth';
 
 export async function POST(request) {
   const token = request.cookies.get('token')?.value;

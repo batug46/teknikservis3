@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import prisma from '../../lib/prisma'; // <-- YOL DÜZELTİLDİ
+import prisma from '../../../lib/prisma';
 
 // Bu satır, Vercel'in eski veriyi önbellekten getirmesini engeller.
 export const dynamic = 'force-dynamic'; 
