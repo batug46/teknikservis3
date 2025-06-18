@@ -7,17 +7,29 @@ export async function POST(request) {
     const body = await request.json();
     const { email, password, name, adSoyad, phone } = body;
 
-    // Validate input
-    if (!email || !password || !name || !adSoyad) {
-      return NextResponse.json(
-        { error: 'Tüm zorunlu alanları doldurun' },
-        { status: 400 }
-      );
+    // Input validation
+    if (!email?.trim()) {
+      return NextResponse.json({ error: 'Email adresi zorunludur' }, { status: 400 });
+    }
+    if (!password?.trim() || password.length < 6) {
+      return NextResponse.json({ error: 'Şifre en az 6 karakter olmalıdır' }, { status: 400 });
+    }
+    if (!name?.trim()) {
+      return NextResponse.json({ error: 'İsim zorunludur' }, { status: 400 });
+    }
+    if (!adSoyad?.trim()) {
+      return NextResponse.json({ error: 'Ad Soyad zorunludur' }, { status: 400 });
+    }
+
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return NextResponse.json({ error: 'Geçerli bir email adresi giriniz' }, { status: 400 });
     }
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
-      where: { email }
+      where: { email: email.toLowerCase() }
     });
 
     if (existingUser) {
@@ -33,12 +45,12 @@ export async function POST(request) {
     // Create user
     const user = await prisma.user.create({
       data: {
-        email,
+        email: email.toLowerCase(),
         password: hashedPassword,
-        name,
-        adSoyad,
-        phone,
-        role: 'user', // Default role
+        name: name.trim(),
+        adSoyad: adSoyad.trim(),
+        phone: phone?.trim(),
+        role: 'user',
       },
     });
 
@@ -51,8 +63,17 @@ export async function POST(request) {
     });
   } catch (error) {
     console.error('Registration error:', error);
+    
+    // Check for specific Prisma errors
+    if (error.code === 'P2002') {
+      return NextResponse.json(
+        { error: 'Bu email adresi zaten kullanımda' },
+        { status: 400 }
+      );
+    }
+
     return NextResponse.json(
-      { error: 'Kayıt işlemi başarısız' },
+      { error: 'Kayıt işlemi başarısız. Lütfen daha sonra tekrar deneyin.' },
       { status: 500 }
     );
   }
