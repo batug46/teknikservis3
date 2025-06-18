@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
+// Diğer dosyalarınızdaki doğru yolu buraya uyguladım:
 import prisma from '../../../lib/prisma';
 
-// Bu satır, Vercel'in eski veriyi önbellekten getirmesini engeller.
+// Vercel'in eski veriyi önbellekten getirmesini engeller.
 export const dynamic = 'force-dynamic'; 
 
 export async function GET() {
@@ -11,17 +12,9 @@ export async function GET() {
         createdAt: 'desc',
       },
     });
-
-    if (!sliders || sliders.length === 0) {
-      return NextResponse.json([]);
-    }
-
     return NextResponse.json(sliders);
   } catch (error) {
-    console.error('Failed to fetch sliders:', error);
-    return NextResponse.json({ 
-      error: 'Failed to fetch sliders',
-      details: error.message 
-    }, { status: 500 });
+    console.error('Sliderlar alınamadı:', error);
+    return NextResponse.json({ error: 'Sliderlar alınamadı' }, { status: 500 });
   }
 }
