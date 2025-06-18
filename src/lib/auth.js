@@ -19,3 +19,15 @@ export async function verifyAuth(request) {
     return null;
   }
 }
+
+export async function verifyToken(token) {
+  if (!token) return false;
+  
+  try {
+    const { payload } = await jwtVerify(token, JWT_SECRET);
+    return payload.role === 'admin';
+  } catch (err) {
+    console.error('Token verification error:', err);
+    return false;
+  }
+}
