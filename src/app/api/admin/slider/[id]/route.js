@@ -17,16 +17,12 @@ export async function DELETE(request, { params }) {
         const { id } = params;
         
         const slider = await prisma.slider.delete({
-            where: { id: parseInt(id) }
+            where: { id }
         });
 
-        if (!slider) {
-            return NextResponse.json({ error: 'Slider bulunamadı' }, { status: 404 });
-        }
-
-        return NextResponse.json({ message: 'Slider başarıyla silindi' });
+        return NextResponse.json(slider);
     } catch (error) {
         console.error('Slider deletion error:', error);
-        return NextResponse.json({ error: 'Slider silinemedi' }, { status: 500 });
+        return NextResponse.json({ error: 'Sunucu Hatası: Slider silinemedi.' }, { status: 500 });
     }
 }
