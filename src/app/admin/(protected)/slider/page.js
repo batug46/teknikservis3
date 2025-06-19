@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 
 const SliderAdminPage = () => {
     const [sliders, setSliders] = useState([]);
@@ -11,6 +12,7 @@ const SliderAdminPage = () => {
     const [success, setSuccess] = useState('');
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
+    const [previewImage, setPreviewImage] = useState('');
 
     const fetchSliders = async () => {
         try {
@@ -41,11 +43,6 @@ const SliderAdminPage = () => {
         fetchSliders();
     }, []);
 
-    const clearMessages = () => {
-        setError('');
-        setSuccess('');
-    };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         clearMessages();
@@ -60,7 +57,11 @@ const SliderAdminPage = () => {
             const res = await fetch('/api/admin/slider', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title: title.trim(), imageUrl: imageUrl.trim(), link: link.trim() || null }),
+                body: JSON.stringify({ 
+                    title: title.trim(), 
+                    imageUrl: imageUrl.trim(), 
+                    link: link.trim() || null 
+                }),
             });
 
             const data = await res.json();
@@ -73,6 +74,7 @@ const SliderAdminPage = () => {
             setTitle('');
             setImageUrl('');
             setLink('');
+            setPreviewImage('');
             await fetchSliders();
         } catch (err) {
             console.error('Slider creation error:', err);
@@ -81,10 +83,9 @@ const SliderAdminPage = () => {
             setSubmitting(false);
         }
     };
-    
+
     const handleDelete = async (id) => {
         if (!confirm('Bu sliderı kalıcı olarak silmek istediğinizden emin misiniz?')) return;
-        
         clearMessages();
 
         try {
@@ -106,115 +107,149 @@ const SliderAdminPage = () => {
         }
     };
 
+    const clearMessages = () => {
+        setError('');
+        setSuccess('');
+    };
+
     return (
-        <div className="container mx-auto px-4 py-6">
-            <h1 className="text-3xl font-bold text-gray-800 mb-6">Slider Yönetimi</h1>
-            
-            {error && (
-                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                    <span className="block sm:inline">{error}</span>
-                </div>
-            )}
-            {success && (
-                <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
-                    <span className="block sm:inline">{success}</span>
-                </div>
-            )}
+        <div className="container mx-auto px-4 py-8">
+            <div className="flex flex-col md:flex-row gap-8">
+                {/* Sol Taraf - Form */}
+                <div className="md:w-1/3">
+                    <div className="bg-white rounded-lg shadow-md p-6">
+                        <h2 className="text-2xl font-semibold mb-6">Yeni Slider Ekle</h2>
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Slider Başlığı
+                                </label>
+                                <input
+                                    type="text"
+                                    value={title}
+                                    onChange={(e) => setTitle(e.target.value)}
+                                    className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500"
+                                    placeholder="Slider başlığını girin"
+                                />
+                            </div>
 
-            <div className="bg-white p-6 rounded-lg shadow-md mb-8">
-                <h2 className="text-2xl font-semibold mb-4">Yeni Slider Ekle</h2>
-                <form onSubmit={handleSubmit}>
-                    <div className="mb-4">
-                        <label htmlFor="title" className="block text-gray-700 text-sm font-bold mb-2">Slider Başlığı</label>
-                        <input
-                            type="text"
-                            id="title"
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                            disabled={submitting}
-                        />
-                    </div>
-                    <div className="mb-4">
-                        <label htmlFor="imageUrl" className="block text-gray-700 text-sm font-bold mb-2">Resim URL</label>
-                        <input
-                            type="text"
-                            id="imageUrl"
-                            value={imageUrl}
-                            onChange={(e) => setImageUrl(e.target.value)}
-                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                            disabled={submitting}
-                        />
-                    </div>
-                    <div className="mb-6">
-                        <label htmlFor="link" className="block text-gray-700 text-sm font-bold mb-2">Yönlendirilecek Link (İsteğe Bağlı)</label>
-                        <input
-                            type="text"
-                            id="link"
-                            value={link}
-                            onChange={(e) => setLink(e.target.value)}
-                            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                            disabled={submitting}
-                        />
-                    </div>
-                    <button
-                        type="submit"
-                        className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ${submitting ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        disabled={submitting}
-                    >
-                        {submitting ? 'Kaydediliyor...' : 'Sliderı Kaydet'}
-                    </button>
-                </form>
-            </div>
-
-            <div className="bg-white p-6 rounded-lg shadow-md">
-                <h2 className="text-2xl font-bold text-gray-800 mb-4">Mevcut Sliderlar</h2>
-                {loading ? (
-                    <div className="flex justify-center items-center py-8">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-                    </div>
-                ) : (
-                    sliders.length > 0 ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {sliders.map((slider) => (
-                                <div key={slider.id} className="border rounded-lg overflow-hidden shadow-lg transition-shadow duration-300 hover:shadow-xl">
-                                    <div className="relative h-40">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Resim URL
+                                </label>
+                                <input
+                                    type="text"
+                                    value={imageUrl}
+                                    onChange={(e) => {
+                                        setImageUrl(e.target.value);
+                                        setPreviewImage(e.target.value);
+                                    }}
+                                    className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500"
+                                    placeholder="Resim URL'sini girin"
+                                />
+                                {previewImage && (
+                                    <div className="mt-2 relative h-40 rounded-md overflow-hidden">
                                         <img
-                                            src={slider.imageUrl}
-                                            alt={slider.title}
+                                            src={previewImage}
+                                            alt="Önizleme"
                                             className="w-full h-full object-cover"
-                                            onError={(e) => {
-                                                e.target.src = '/placeholder-image.jpg';
-                                                e.target.alt = 'Resim yüklenemedi';
-                                            }}
+                                            onError={() => setPreviewImage('')}
                                         />
                                     </div>
-                                    <div className="p-4">
-                                        <h3 className="font-bold text-lg mb-2 truncate">{slider.title}</h3>
-                                        {slider.link && (
-                                            <a
-                                                href={slider.link}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-blue-500 hover:text-blue-800 text-sm break-all block mb-3"
-                                            >
-                                                {slider.link}
-                                            </a>
-                                        )}
-                                        <button
-                                            onClick={() => handleDelete(slider.id)}
-                                            className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-xs"
-                                        >
-                                            Sil
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
+                                )}
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Link (İsteğe bağlı)
+                                </label>
+                                <input
+                                    type="text"
+                                    value={link}
+                                    onChange={(e) => setLink(e.target.value)}
+                                    className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500"
+                                    placeholder="Link girin (opsiyonel)"
+                                />
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={submitting}
+                                className={`w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors ${
+                                    submitting ? 'opacity-50 cursor-not-allowed' : ''
+                                }`}
+                            >
+                                {submitting ? 'Ekleniyor...' : 'Slider Ekle'}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                {/* Sağ Taraf - Slider Listesi */}
+                <div className="md:w-2/3">
+                    <div className="bg-white rounded-lg shadow-md p-6">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-2xl font-semibold">Slider Listesi</h2>
                         </div>
-                    ) : (
-                        <p className="text-gray-500 text-center py-8">Gösterilecek slider bulunamadı.</p>
-                    )
-                )}
+
+                        {error && (
+                            <div className="mb-4 bg-red-100 border-l-4 border-red-500 p-4">
+                                <p className="text-red-700">{error}</p>
+                            </div>
+                        )}
+
+                        {success && (
+                            <div className="mb-4 bg-green-100 border-l-4 border-green-500 p-4">
+                                <p className="text-green-700">{success}</p>
+                            </div>
+                        )}
+
+                        {loading ? (
+                            <div className="flex justify-center items-center h-32">
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {sliders.map((slider) => (
+                                    <div key={slider.id} className="border rounded-lg overflow-hidden bg-white hover:shadow-lg transition-shadow">
+                                        <div className="aspect-w-16 aspect-h-9 relative">
+                                            <img
+                                                src={slider.imageUrl}
+                                                alt={slider.title}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </div>
+                                        <div className="p-4">
+                                            <h3 className="font-semibold text-lg mb-2">{slider.title}</h3>
+                                            {slider.link && (
+                                                <a
+                                                    href={slider.link}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-blue-600 hover:text-blue-800 text-sm block mb-2 truncate"
+                                                >
+                                                    {slider.link}
+                                                </a>
+                                            )}
+                                            <button
+                                                onClick={() => handleDelete(slider.id)}
+                                                className="mt-2 w-full px-3 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200 transition-colors"
+                                            >
+                                                Sil
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {!loading && sliders.length === 0 && (
+                            <div className="text-center py-8 text-gray-500">
+                                Henüz slider eklenmemiş.
+                            </div>
+                        )}
+                    </div>
+                </div>
             </div>
         </div>
     );

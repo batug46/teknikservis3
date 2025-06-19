@@ -44,8 +44,7 @@ export async function POST(request) {
             data: {
                 title,
                 imageUrl,
-                link: link || null,
-                order: 0
+                link: link || null
             }
         });
 

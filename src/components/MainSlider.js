@@ -2,78 +2,108 @@
 
 import { useState, useEffect } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination, Autoplay } from 'swiper/modules';
+import { Navigation, Pagination, Autoplay, EffectFade } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
-import 'swiper/css/autoplay';
+import 'swiper/css/effect-fade';
 import Image from 'next/image';
 import Link from 'next/link';
 
 const MainSlider = () => {
-  const [sliders, setSliders] = useState([]);
-  const [loading, setLoading] = useState(true);
+    const [sliders, setSliders] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchSliders = async () => {
-      try {
-        const res = await fetch('/api/slider'); // Veriyi API'den çek
-        if (!res.ok) {
-          throw new Error('Failed to fetch sliders');
-        }
-        const data = await res.json();
-        setSliders(data);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    useEffect(() => {
+        const fetchSliders = async () => {
+            try {
+                const res = await fetch('/api/slider');
+                if (!res.ok) {
+                    throw new Error('Slider verileri alınamadı');
+                }
+                const data = await res.json();
+                setSliders(Array.isArray(data) ? data : []);
+            } catch (err) {
+                console.error('Slider fetch error:', err);
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    fetchSliders();
-  }, []); // Sadece bileşen yüklendiğinde bir kez çalışır
+        fetchSliders();
+    }, []);
 
-  if (loading) {
-    return <div>Yükleniyor...</div>;
-  }
-
-  return (
-    <div className="relative h-96">
-      <Swiper
-        modules={[Navigation, Pagination, Autoplay]}
-        spaceBetween={50}
-        slidesPerView={1}
-        navigation
-        pagination={{ clickable: true }}
-        autoplay={{ delay: 3000 }}
-        loop={true}
-      >
-        {sliders.map((slide) => (
-          <SwiperSlide key={slide.id}>
-            <div className="relative w-full h-96">
-              <Image
-                src={slide.imageUrl}
-                alt={slide.title}
-                layout="fill"
-                objectFit="cover"
-                priority
-              />
-              <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col justify-center items-center text-white p-4">
-                <h2 className="text-4xl font-bold mb-4">{slide.title}</h2>
-                {slide.link && (
-                  <Link href={slide.link} legacyBehavior>
-                    <a className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                      Daha Fazla Bilgi
-                    </a>
-                  </Link>
-                )}
-              </div>
+    if (loading) {
+        return (
+            <div className="w-full h-[400px] bg-gray-100 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
             </div>
-          </SwiperSlide>
-        ))}
-      </Swiper>
-    </div>
-  );
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="w-full h-[400px] bg-gray-100 flex items-center justify-center text-red-500">
+                {error}
+            </div>
+        );
+    }
+
+    if (!sliders || sliders.length === 0) {
+        return (
+            <div className="w-full h-[400px] bg-gray-100 flex items-center justify-center text-gray-500">
+                Henüz slider eklenmemiş.
+            </div>
+        );
+    }
+
+    return (
+        <div className="relative w-full h-[400px]">
+            <Swiper
+                modules={[Navigation, Pagination, Autoplay, EffectFade]}
+                navigation
+                pagination={{ clickable: true }}
+                autoplay={{ delay: 5000, disableOnInteraction: false }}
+                effect="fade"
+                loop={true}
+                className="w-full h-full"
+            >
+                {sliders.map((slider) => (
+                    <SwiperSlide key={slider.id}>
+                        {slider.link ? (
+                            <Link href={slider.link} className="block w-full h-full relative">
+                                <img
+                                    src={slider.imageUrl}
+                                    alt={slider.title}
+                                    className="w-full h-full object-cover"
+                                />
+                                <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
+                                    <h2 className="text-white text-3xl font-bold text-center px-4 drop-shadow-lg">
+                                        {slider.title}
+                                    </h2>
+                                </div>
+                            </Link>
+                        ) : (
+                            <div className="relative w-full h-full">
+                                <img
+                                    src={slider.imageUrl}
+                                    alt={slider.title}
+                                    className="w-full h-full object-cover"
+                                />
+                                <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
+                                    <h2 className="text-white text-3xl font-bold text-center px-4 drop-shadow-lg">
+                                        {slider.title}
+                                    </h2>
+                                </div>
+                            </div>
+                        )}
+                    </SwiperSlide>
+                ))}
+            </Swiper>
+        </div>
+    );
 };
 
 export default MainSlider;
