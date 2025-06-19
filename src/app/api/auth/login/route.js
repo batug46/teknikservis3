@@ -11,11 +11,17 @@ const JWT_SECRET = new TextEncoder().encode(
 
 export async function POST(request) {
   try {
-    const { email, password } = await request.json();
+    // İstek gövdesini kontrol et
+    const body = await request.json();
+    console.log('Gelen istek:', body);
+
+    const { email, password } = body;
+
     if (!email || !password) {
       return NextResponse.json({ error: 'E-posta ve şifre zorunludur.' }, { status: 400 });
     }
 
+    // Kullanıcıyı bul
     const user = await prisma.user.findUnique({ 
       where: { email },
       select: {
@@ -28,21 +34,27 @@ export async function POST(request) {
       }
     });
 
+    console.log('Bulunan kullanıcı:', { ...user, password: '***' });
+
     if (!user) {
       return NextResponse.json({ error: 'Geçersiz e-posta veya şifre.' }, { status: 401 });
     }
 
+    // Şifreyi kontrol et
     const isPasswordValid = await bcrypt.compare(password, user.password);
+    console.log('Şifre doğru mu:', isPasswordValid);
+
     if (!isPasswordValid) {
       return NextResponse.json({ error: 'Geçersiz e-posta veya şifre.' }, { status: 401 });
     }
 
+    // Token oluştur
     const token = await new SignJWT({
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-      })
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+    })
       .setProtectedHeader({ alg: 'HS256' })
       .setIssuedAt()
       .setExpirationTime('1d')
@@ -50,12 +62,7 @@ export async function POST(request) {
 
     const { password: _, ...userWithoutPassword } = user;
     
-    const response = NextResponse.json({
-      message: 'Giriş başarılı!',
-      user: userWithoutPassword,
-    });
-
-    // Set cookie using the cookies() API
+    // Cookie ayarla
     cookies().set({
       name: 'token',
       value: token,
@@ -63,14 +70,24 @@ export async function POST(request) {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
-      maxAge: 60 * 60 * 24, // 1 day
+      maxAge: 60 * 60 * 24, // 1 gün
     });
 
-    return response;
+    return NextResponse.json({
+      message: 'Giriş başarılı!',
+      user: userWithoutPassword,
+    });
+
   } catch (error) {
-    console.error('Giriş API Hatası:', error);
+    // Hata detaylarını logla
+    console.error('Login hatası:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
+
     return NextResponse.json({ 
-      error: 'Sunucu hatası.',
+      error: 'Giriş yapılırken bir hata oluştu. Lütfen tekrar deneyin.',
       details: process.env.NODE_ENV === 'development' ? error.message : undefined 
     }, { status: 500 });
   }

@@ -15,7 +15,7 @@ export async function GET(request) {
         }
 
         const sliders = await prisma.slider.findMany({
-            orderBy: { createdAt: 'desc' }
+            orderBy: { order: 'asc' }
         });
         return NextResponse.json(sliders);
     } catch (error) {
@@ -34,7 +34,7 @@ export async function POST(request) {
         }
 
         const data = await request.json();
-        const { title, imageUrl, link } = data;
+        const { title, imageUrl, link, order } = data;
 
         if (!title || !imageUrl) {
             return NextResponse.json({ error: 'Başlık ve resim URL\'si zorunludur' }, { status: 400 });
@@ -44,7 +44,8 @@ export async function POST(request) {
             data: {
                 title,
                 imageUrl,
-                link: link || null
+                link: link || null,
+                order: order || 0
             }
         });
 

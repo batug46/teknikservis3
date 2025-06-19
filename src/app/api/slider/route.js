@@ -7,12 +7,13 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
   try {
     const sliders = await prisma.slider.findMany({
-      orderBy: { createdAt: 'desc' },
+      orderBy: { order: 'asc' },
       select: {
         id: true,
         title: true,
         imageUrl: true,
-        link: true
+        link: true,
+        order: true
       }
     });
 

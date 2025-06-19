@@ -2,7 +2,7 @@ import { jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 
 const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || 'your-super-secret-key-that-is-long-enough'
+  process.env.JWT_SECRET || 'default-secret-key-that-is-at-least-32-characters'
 );
 
 export async function verifyAuth(request) {
