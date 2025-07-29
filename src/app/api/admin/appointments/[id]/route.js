@@ -6,6 +6,8 @@ export async function PUT(request, { params }) {
   try {
     const id = parseInt(params.id);
     const { status } = await request.json();
+    
+    // Status'u güncelle
     const updatedAppointment = await prisma.appointment.update({
       where: { id },
       data: { status },
@@ -19,13 +21,15 @@ export async function PUT(request, { params }) {
       },
     });
 
-    // Price bilgisini de ekle
+    // Randevuya fiyat bilgisini ekle
     const serviceProduct = await prisma.product.findFirst({
       where: {
         name: updatedAppointment.serviceType,
-        category: 'servis',
+        category: 'hizmet',
       },
-      select: { price: true },
+      select: {
+        price: true,
+      },
     });
 
     const appointmentWithPrice = {
@@ -35,6 +39,7 @@ export async function PUT(request, { params }) {
 
     return NextResponse.json(appointmentWithPrice);
   } catch (error) {
+    console.error('Randevu güncelleme hatası:', error);
     return NextResponse.json({ error: 'İşlem başarısız' }, { status: 500 });
   }
 }

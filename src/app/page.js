@@ -50,8 +50,8 @@ function ServiceCard({ title, description, link, imageUrl }) {
         <p className="text-gray-200 mb-6 leading-relaxed transition-all duration-200 ease-out group-hover:text-gray-100">{description}</p>
         <div>
           <Link href={link} className="inline-block px-6 py-3 bg-white/20 backdrop-blur-sm text-white border border-white/30 rounded-lg font-semibold text-sm transition-all duration-150 ease-out shadow-md hover:bg-white/30 hover:border-white/50 hover:shadow-lg hover:scale-105 transform">
-            Detayları Gör
-          </Link>
+          Detayları Gör
+        </Link>
         </div>
       </div>
     </div>
@@ -73,14 +73,14 @@ export default async function Home() {
                 {/* Animated Background Elements - only show when no slides */}
                 {(!slides || slides.length === 0) && (
                     <>
-                        <div className="absolute inset-0">
-                            <div className="absolute top-0 left-0 w-72 h-72 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
-                            <div className="absolute top-1/3 right-0 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
-                            <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl animate-pulse delay-2000"></div>
-                        </div>
-                        
-                        {/* Tech Grid Pattern */}
-                        <div className="absolute inset-0 opacity-40" style={{backgroundImage: "url('data:image/svg+xml,%3Csvg width=\"60\" height=\"60\" viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cg fill=\"none\" fill-rule=\"evenodd\"%3E%3Cg fill=\"%23ffffff\" fill-opacity=\"0.05\"%3E%3Ccircle cx=\"30\" cy=\"30\" r=\"1\"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')"}}></div>
+                <div className="absolute inset-0">
+                    <div className="absolute top-0 left-0 w-72 h-72 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
+                    <div className="absolute top-1/3 right-0 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+                    <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl animate-pulse delay-2000"></div>
+                </div>
+                
+                {/* Tech Grid Pattern */}
+                <div className="absolute inset-0 opacity-40" style={{backgroundImage: "url('data:image/svg+xml,%3Csvg width=\"60\" height=\"60\" viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cg fill=\"none\" fill-rule=\"evenodd\"%3E%3Cg fill=\"%23ffffff\" fill-opacity=\"0.05\"%3E%3Ccircle cx=\"30\" cy=\"30\" r=\"1\"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')"}}></div>
                     </>
                 )}
                 
@@ -132,24 +132,24 @@ export default async function Home() {
                         ) : (
                             // Fallback hizmetler (eğer veritabanında hizmet yoksa)
                             <>
-                                <ServiceCard 
-                                    title="Bilgisayar Tamiri"
-                                    description="Donanım ve yazılım sorunlarınıza hızlı, garantili ve güvenilir çözümler sunuyoruz."
-                                    link="/products?category=bilgisayar-tamiri"
+                        <ServiceCard 
+                            title="Bilgisayar Tamiri"
+                            description="Donanım ve yazılım sorunlarınıza hızlı, garantili ve güvenilir çözümler sunuyoruz."
+                            link="/products?category=bilgisayar-tamiri"
                                     imageUrl="https://images.pexels.com/photos/4005596/pexels-photo-4005596.jpeg"
-                                />
-                                <ServiceCard 
-                                    title="Telefon Tamiri"
-                                    description="Ekran değişimi, batarya sorunları ve diğer tüm marka model telefon tamir işlemleri."
-                                    link="/products?category=telefon-tamiri"
+                        />
+                        <ServiceCard 
+                            title="Telefon Tamiri"
+                            description="Ekran değişimi, batarya sorunları ve diğer tüm marka model telefon tamir işlemleri."
+                            link="/products?category=telefon-tamiri"
                                     imageUrl="https://images.pexels.com/photos/607812/pexels-photo-607812.jpeg"
-                                />
-                                <ServiceCard 
-                                    title="Güvenlik Sistemleri"
-                                    description="Kamera ve alarm sistemleri kurulumu ile ev ve iş yerinizi güvence altına alıyoruz."
-                                    link="/products?category=guvenlik-sistemleri"
+                        />
+                        <ServiceCard 
+                            title="Güvenlik Sistemleri"
+                            description="Kamera ve alarm sistemleri kurulumu ile ev ve iş yerinizi güvence altına alıyoruz."
+                            link="/products?category=guvenlik-sistemleri"
                                     imageUrl="https://images.pexels.com/photos/277553/pexels-photo-277553.jpeg"
-                                />
+                        />
                             </>
                         )}
                     </div>

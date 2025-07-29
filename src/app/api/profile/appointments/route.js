@@ -18,10 +18,40 @@ export async function GET() {
       where: {
         userId: session.user.id
       },
+      include: {
+        user: {
+          select: { 
+            name: true,
+            email: true 
+          },
+        },
+      },
       orderBy: {
         createdAt: 'desc'
       }
     });
+
+    // Her randevuya fiyat bilgisini ekle
+    const appointmentsWithPrice = await Promise.all(
+      appointments.map(async (appointment) => {
+        const serviceProduct = await prisma.product.findFirst({
+          where: {
+            name: appointment.serviceType,
+            category: 'hizmet',
+          },
+          select: {
+            price: true,
+          },
+        });
+
+        return {
+          ...appointment,
+          price: serviceProduct?.price || 0,
+        };
+      })
+    );
+
+    return NextResponse.json(appointmentsWithPrice);
 
     return NextResponse.json(appointments);
   } catch (error) {

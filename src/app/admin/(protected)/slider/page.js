@@ -249,7 +249,7 @@ export default function AdminSliderPage() {
               >
                 <X size={20} className="text-gray-500" />
               </button>
-            </div>
+                </div>
 
             {/* Modal Body - Scrollable */}
             <div className="flex-1 overflow-y-auto scroll-smooth overscroll-contain" 
@@ -326,36 +326,36 @@ export default function AdminSliderPage() {
 
             {/* Modal Footer - Always Visible */}
             <div className="flex gap-3 p-6 border-t border-gray-200 flex-shrink-0 bg-white">
-              <button
-                type="button"
-                onClick={() => setShowModal(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 
-                         transition-colors duration-200 font-medium"
-                disabled={submitting}
-              >
-                İptal
-              </button>
-              <button
-                type="submit"
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 
+                           transition-colors duration-200 font-medium"
+                  disabled={submitting}
+                >
+                  İptal
+                </button>
+                <button
+                  type="submit"
                 form="slide-form"
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 
-                         transition-colors duration-200 font-medium flex items-center justify-center gap-2
-                         disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={submitting}
-              >
-                {submitting ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    Kaydediliyor...
-                  </>
-                ) : (
-                  <>
-                    <Save className="w-4 h-4" />
-                    {editingSlide ? 'Güncelle' : 'Ekle'}
-                  </>
-                )}
-              </button>
-            </div>
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 
+                           transition-colors duration-200 font-medium flex items-center justify-center gap-2
+                           disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={submitting}
+                >
+                  {submitting ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Kaydediliyor...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4" />
+                      {editingSlide ? 'Güncelle' : 'Ekle'}
+                    </>
+                  )}
+                </button>
+              </div>
           </div>
         </div>
       )}

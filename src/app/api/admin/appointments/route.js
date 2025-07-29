@@ -25,7 +25,7 @@ export async function GET(request) {
     const serviceProducts = await prisma.product.findMany({
       where: {
         name: { in: serviceTypes },
-        category: 'servis',
+        category: 'hizmet',
       },
       select: {
         name: true,

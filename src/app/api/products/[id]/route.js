@@ -16,6 +16,11 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: 'Ürün bulunamadı.' }, { status: 404 });
     }
 
+    // Devre dışı ürünleri kontrol et
+    if (!product.isActive) {
+      return NextResponse.json({ error: 'Bu ürün artık mevcut değil.' }, { status: 404 });
+    }
+
     return NextResponse.json(product);
   } catch (error) {
     console.error("API /api/products/[id] Error:", error);

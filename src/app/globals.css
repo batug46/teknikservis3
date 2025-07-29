@@ -1,5 +1,8 @@
+/* stylelint-disable-next-line at-rule-no-unknown */
 @tailwind base;
+/* stylelint-disable-next-line at-rule-no-unknown */
 @tailwind components;
+/* stylelint-disable-next-line at-rule-no-unknown */
 @tailwind utilities;
 
 :root {
@@ -14,9 +17,6 @@ body {
   padding-top: 80px;
   font-family: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
-  font-variant-numeric: oldstyle-nums;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Smooth scroll davranışı */
@@ -56,8 +56,6 @@ html {
   .will-change-transform {
     will-change: transform;
     transform: translateZ(0);
-    backface-visibility: hidden;
-    perspective: 1000px;
   }
   
   /* Optimize hover transitions */

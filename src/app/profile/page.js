@@ -28,6 +28,7 @@ export default function ProfilePage() {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [rating, setRating] = useState('0');
@@ -559,7 +560,16 @@ export default function ProfilePage() {
                             </span>
                           </div>
                         </div>
-                        {getStatusBadge(appointment.status, 'appointment')}
+                        <div className="flex items-center space-x-3">
+                          {getStatusBadge(appointment.status, 'appointment')}
+                          <button
+                            onClick={() => setSelectedAppointment(appointment)}
+                            className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+                          >
+                            <Eye className="w-4 h-4 mr-1" />
+                            Detaylar
+                          </button>
+                        </div>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -727,6 +737,72 @@ export default function ProfilePage() {
                   Puanla
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Randevu Detay Modal */}
+      {selectedAppointment && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-gray-900 dark:bg-opacity-75 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-11/12 max-w-2xl shadow-lg rounded-md bg-white dark:bg-gray-800">
+            <div className="mt-3">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                  Randevu Detayları - #{selectedAppointment.id}
+                </h3>
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  {formatDate(selectedAppointment.date)} - {selectedAppointment.time}
+                </div>
+              </div>
+              
+              <div className="space-y-6">
+                {/* Randevu Durumu */}
+                <div>
+                  <h6 className="text-base font-bold text-gray-900 dark:text-gray-100 mb-3">RANDEVU DURUMU</h6>
+                  <div className="inline-block">
+                    {getStatusBadge(selectedAppointment.status, 'appointment')}
+                  </div>
+                </div>
+
+                {/* Müşteri Bilgileri */}
+                <div>
+                  <h6 className="text-base font-bold text-gray-900 dark:text-gray-100 mb-3">MÜŞTERİ BİLGİLERİ</h6>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                    <div><span className="font-semibold text-gray-700 dark:text-gray-300">İsim:</span> {selectedAppointment.user?.name || user?.name || 'Belirtilmemiş'}</div>
+                    <div><span className="font-semibold text-gray-700 dark:text-gray-300">Email:</span> {selectedAppointment.user?.email || user?.email || 'Belirtilmemiş'}</div>
+                    <div><span className="font-semibold text-gray-700 dark:text-gray-300">Telefon:</span> {selectedAppointment.phone || user?.phone || 'Belirtilmemiş'}</div>
+                    <div><span className="font-semibold text-gray-700 dark:text-gray-300">Adres:</span> {selectedAppointment.address || user?.address || 'Belirtilmemiş'}</div>
+                  </div>
+                </div>
+
+                {/* Randevu Bilgileri */}
+                <div>
+                  <h6 className="text-base font-bold text-gray-900 dark:text-gray-100 mb-3">RANDEVU BİLGİLERİ</h6>
+                  <div className="space-y-2 text-sm">
+                    <div><span className="font-semibold text-gray-700 dark:text-gray-300">Hizmet:</span> {selectedAppointment.serviceType}</div>
+                    <div><span className="font-semibold text-gray-700 dark:text-gray-300">Özel Notlar:</span> {selectedAppointment.description || 'Belirtilmemiş'}</div>
+                    <div><span className="font-semibold text-gray-700 dark:text-gray-300">Fiyat:</span> {selectedAppointment.price && selectedAppointment.price > 0 ? `${selectedAppointment.price} ₺` : 'Belirtilmemiş'}</div>
+                    <div><span className="font-semibold text-gray-700 dark:text-gray-300">Oluşturulma:</span> {new Date(selectedAppointment.createdAt).toLocaleDateString('tr-TR', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse mt-6">
+              <button
+                type="button"
+                className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-gray-600 dark:bg-gray-500 text-base font-medium text-white hover:bg-gray-700 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-200"
+                onClick={() => setSelectedAppointment(null)}
+              >
+                Kapat
+              </button>
             </div>
           </div>
         </div>

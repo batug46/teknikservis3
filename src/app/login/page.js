@@ -95,7 +95,7 @@ export default function LoginPage() {
             <div>
               <button
                 type="submit"
-                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400"
+                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400 transition-all duration-150 ease-out will-change-transform hover:scale-105"
                 disabled={loading}
               >
                 {loading ? (
@@ -113,7 +113,7 @@ export default function LoginPage() {
             </div>
           </form>
           <div className="text-sm text-center">
-            <Link href="/register" className="font-medium text-indigo-600 hover:text-indigo-500">
+            <Link href="/register" className="font-medium text-indigo-600 hover:text-indigo-500 transition-all duration-150 ease-out will-change-transform hover:scale-105">
               Hesabınız yok mu? Hemen kaydolun
             </Link>
           </div>

@@ -187,9 +187,9 @@ export default function RegisterPage() {
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
-                    <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-300" />
+                    <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-300 transition-colors duration-150 ease-out" />
                   ) : (
-                    <Eye className="h-5 w-5 text-gray-400 hover:text-gray-300" />
+                    <Eye className="h-5 w-5 text-gray-400 hover:text-gray-300 transition-colors duration-150 ease-out" />
                   )}
                 </button>
               </div>
@@ -221,9 +221,9 @@ export default function RegisterPage() {
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 >
                   {showConfirmPassword ? (
-                    <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-300" />
+                    <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-300 transition-colors duration-150 ease-out" />
                   ) : (
-                    <Eye className="h-5 w-5 text-gray-400 hover:text-gray-300" />
+                    <Eye className="h-5 w-5 text-gray-400 hover:text-gray-300 transition-colors duration-150 ease-out" />
                   )}
                 </button>
               </div>
@@ -234,7 +234,7 @@ export default function RegisterPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
+                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-150 ease-out shadow-lg hover:shadow-xl will-change-transform hover:scale-105"
               >
                 {loading ? (
                   <div className="flex items-center">
@@ -256,7 +256,7 @@ export default function RegisterPage() {
                 Zaten hesabınız var mı?{' '}
                 <Link 
                   href="/login" 
-                  className="font-medium text-blue-400 hover:text-blue-300 transition-colors duration-200 hover:underline"
+                  className="font-medium text-blue-400 hover:text-blue-300 transition-all duration-150 ease-out hover:underline will-change-transform hover:scale-105"
                 >
                   Giriş yapın
                 </Link>

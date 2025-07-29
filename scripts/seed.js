@@ -60,60 +60,68 @@ async function main() {
     console.log(`Hizmet oluşturuldu/güncellendi: ${service.title}`);
   }
 
-  // --- 3. Mevcut Ürünleri ve Servisleri Ekle ---
+  // --- 1. Mevcut Ürünleri Ekle ---
+  const products = [
+    {
+      name: 'ABC 4K Güvenlik Kamerası',
+      description: 'Gece görüşlü, hareket sensörlü 4K çözünürlük ile yüksek kaliteli güvenlik kamerası.',
+      price: 1850.00,
+      imageUrl: 'https://images.pexels.com/photos/1779487/pexels-photo-1779487.jpeg',
+      category: 'urun',
+      stock: 39,
+      isActive: true,
+    },
+    {
+      name: 'ProModel Akıllı Telefon',
+      description: 'Yüksek çözünürlüklü kamera ve uzun pil ömrü ile premium akıllı telefon.',
+      price: 25000.00,
+      imageUrl: 'https://images.pexels.com/photos/607812/pexels-photo-607812.jpeg',
+      category: 'urun',
+      stock: 24,
+      isActive: true,
+    },
+    {
+      name: 'XYZ Oyuncu Laptop',
+      description: 'En yeni nesil işlemci ve ekran kartı ile yüksek performanslı oyuncu laptop.',
+      price: 32500.00,
+      imageUrl: 'https://images.pexels.com/photos/4005596/pexels-photo-4005596.jpeg',
+      category: 'urun',
+      stock: 14,
+      isActive: true,
+    },
+  ];
+
+  // --- 2. Mevcut Hizmetleri Ekle ---
   const services = [
     {
       name: 'Kamera Sistemi Kurulum ve Tamiri',
       description: 'Güvenlik kamerası sistemlerinizin kurulumu, bakımı ve profesyonel tamiri.',
       price: 450.00,
       imageUrl: 'https://images.pexels.com/photos/277553/pexels-photo-277553.jpeg',
-      category: 'servis', // Kategori 'servis' olarak belirlendi
-      stock: 100,
+      category: 'hizmet',
+      stock: 0,
+      isActive: true,
     },
     {
       name: 'Bilgisayar Donanım Tamiri',
       description: 'Masaüstü ve dizüstü bilgisayarlarınız için anakart, ekran kartı ve diğer donanım tamir hizmetleri.',
       price: 300.00,
       imageUrl: 'https://images.pexels.com/photos/4005596/pexels-photo-4005596.jpeg',
-      category: 'servis',
-      stock: 100,
+      category: 'hizmet',
+      stock: 0,
+      isActive: true,
     },
     {
       name: 'Akıllı Telefon Ekran Değişimi',
       description: 'Kırık veya arızalı akıllı telefon ekranlarınızın orijinal parçalarla değişimi.',
       price: 250.00,
       imageUrl: 'https://images.pexels.com/photos/607812/pexels-photo-607812.jpeg',
-      category: 'servis',
-      stock: 100,
+      category: 'hizmet',
+      stock: 0,
+      isActive: true,
     },
   ];
-  const physicalProducts = [
-    {
-        name: 'XYZ Oyuncu Laptop',
-        description: 'En yeni nesil işlemci ve ekran kartı ile yüksek performans.',
-        price: 32500.00,
-        imageUrl: 'https://images.pexels.com/photos/18105/pexels-photo.jpg',
-        category: 'urun', // Kategori 'urun' olarak belirlendi
-        stock: 15,
-    },
-    {
-        name: 'ABC 4K Güvenlik Kamerası',
-        description: 'Gece görüşlü, hareket sensörlü 4K çözünürlüklü güvenlik kamerası.',
-        price: 1850.00,
-        imageUrl: 'https://images.pexels.com/photos/224959/pexels-photo-224959.jpeg',
-        category: 'urun',
-        stock: 40,
-    },
-    {
-        name: 'ProModel Akıllı Telefon',
-        description: 'Yüksek çözünürlüklü kamera ve uzun pil ömrüne sahip son model akıllı telefon.',
-        price: 25000.00,
-        imageUrl: 'https://images.pexels.com/photos/47261/pexels-photo-47261.jpeg',
-        category: 'urun',
-        stock: 25,
-    },
-  ];
-  const allProducts = [...services, ...physicalProducts];
+  const allProducts = [...services, ...products];
 
   for (const p of allProducts) {
     await prisma.product.upsert({
