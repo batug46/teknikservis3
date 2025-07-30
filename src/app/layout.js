@@ -14,6 +14,7 @@ const inter = Inter({
 export const metadata = {
   title: 'Efe Bilgisayar ve Güvenlik Sistemleri',
   description: 'Bilgisayar tamiri, güvenlik kamerası sistemleri ve teknik servis hizmetleri',
+  viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
 };
 
 export default async function RootLayout({ children }) {

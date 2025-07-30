@@ -2,12 +2,13 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
 import { 
   User, Mail, Phone, MapPin, Calendar, Clock, Package, 
   Star, Edit3, Save, X, ShoppingBag, Settings, 
   CheckCircle, XCircle, AlertCircle, Eye, RefreshCw,
-  CreditCard, Truck, Award
+  CreditCard, Truck, Award, Heart
 } from 'lucide-react';
 
 // Sayfayı dinamik olarak işaretle
@@ -32,7 +33,18 @@ export default function ProfilePage() {
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [rating, setRating] = useState('0');
+  const [likedProducts, setLikedProducts] = useState([]);
+  const [likedProductsLoading, setLikedProductsLoading] = useState(true);
+  const [returns, setReturns] = useState([]);
+  const [returnsLoading, setReturnsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('profile');
+  
+  // İade modal state'leri
+  const [showReturnModal, setShowReturnModal] = useState(false);
+  const [selectedReturnItem, setSelectedReturnItem] = useState(null);
+  const [returnReason, setReturnReason] = useState('');
+  const [returnDescription, setReturnDescription] = useState('');
+  const [returnType, setReturnType] = useState('REFUND');
 
   // Profil güncelleme state'leri
   const [name, setName] = useState('');
@@ -66,6 +78,36 @@ export default function ProfilePage() {
       }
     } catch (error) {
       console.error('Randevular yüklenirken hata:', error);
+    }
+  }, []);
+
+  const fetchLikedProducts = useCallback(async () => {
+    try {
+      setLikedProductsLoading(true);
+      const response = await fetch('/api/profile/liked-products');
+      if (response.ok) {
+        const data = await response.json();
+        setLikedProducts(data);
+      }
+    } catch (error) {
+      console.error('Beğenilen ürünler yüklenirken hata:', error);
+    } finally {
+      setLikedProductsLoading(false);
+    }
+  }, []);
+
+  const fetchReturns = useCallback(async () => {
+    try {
+      setReturnsLoading(true);
+      const response = await fetch('/api/profile/returns');
+      if (response.ok) {
+        const data = await response.json();
+        setReturns(data);
+      }
+    } catch (error) {
+      console.error('İade talepleri yüklenirken hata:', error);
+    } finally {
+      setReturnsLoading(false);
     }
   }, []);
 
@@ -109,6 +151,8 @@ export default function ProfilePage() {
       fetchProfile();
       fetchOrders();
       fetchInitialAppointments();
+      fetchLikedProducts();
+      fetchReturns();
 
       // Sayfa visibility değiştiğinde veriyi yenile
       const handleVisibilityChange = () => {
@@ -224,6 +268,63 @@ export default function ProfilePage() {
     }
   };
 
+  // İade durumunu kontrol et
+  const getReturnStatusForItem = (orderItemId) => {
+    const returnItem = returns.find(r => r.orderItemId === orderItemId);
+    return returnItem ? returnItem.status : null;
+  };
+
+  // İade butonunu göster/gizle
+  const canCreateReturn = (orderItemId) => {
+    const status = getReturnStatusForItem(orderItemId);
+    return !status || status === 'REJECTED' || status === 'CANCELLED';
+  };
+
+  // İade modal'ını aç
+  const handleReturnClick = (orderItem) => {
+    setSelectedReturnItem(orderItem);
+    setReturnReason('');
+    setReturnDescription('');
+    setReturnType('REFUND');
+    setShowReturnModal(true);
+  };
+
+  // İade modal'ını kapat
+  const handleCloseReturnModal = () => {
+    setShowReturnModal(false);
+    setSelectedReturnItem(null);
+    setReturnReason('');
+    setReturnDescription('');
+    setReturnType('REFUND');
+  };
+
+  const handleCreateReturn = async (orderItem) => {
+    try {
+      const response = await fetch('/api/profile/returns/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderItemId: orderItem.id,
+          reason: returnReason,
+          description: returnDescription,
+          returnType: returnType
+        })
+      });
+
+      if (response.ok) {
+        fetchReturns();
+        setMessage({ type: 'success', text: 'İade talebiniz başarıyla oluşturuldu!' });
+        handleCloseReturnModal();
+      } else {
+        const error = await response.json();
+        setMessage({ type: 'danger', text: error.error || 'İade talebi oluşturulamadı' });
+      }
+    } catch (error) {
+      console.error('İade talebi oluşturma hatası:', error);
+      setMessage({ type: 'danger', text: 'Bir hata oluştu' });
+    }
+  };
+
   // Helper functions
   const formatPrice = (price) => {
     if (!price) return '0.00';
@@ -259,6 +360,17 @@ export default function ProfilePage() {
         CONFIRMED: { bg: 'bg-green-100', text: 'text-green-800', icon: CheckCircle, label: 'Onaylandı' },
         IN_PROGRESS: { bg: 'bg-blue-100', text: 'text-blue-800', icon: RefreshCw, label: 'Devam Ediyor' },
         CANCELLED: { bg: 'bg-red-100', text: 'text-red-800', icon: XCircle, label: 'İptal Edildi' }
+      },
+      return: {
+        PENDING: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-800 dark:text-yellow-200', icon: Clock, label: 'İade Talebi Beklemede' },
+        APPROVED: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-800 dark:text-green-200', icon: CheckCircle, label: 'İade Talebi Onaylandı' },
+        SHIPPING_REQUIRED: { bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-800 dark:text-orange-200', icon: Package, label: 'Kargo Bekleniyor' },
+        SHIPPED: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-800 dark:text-blue-200', icon: Package, label: 'Kargolandı' },
+        RECEIVED: { bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-800 dark:text-purple-200', icon: CheckCircle, label: 'Mağazada Alındı' },
+        REJECTED: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-800 dark:text-red-200', icon: XCircle, label: 'İade Talebi Reddedildi' },
+        PROCESSING: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-800 dark:text-blue-200', icon: RefreshCw, label: 'İade İşleniyor' },
+        COMPLETED: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-800 dark:text-green-200', icon: CheckCircle, label: 'İade Tamamlandı' },
+        CANCELLED: { bg: 'bg-gray-100 dark:bg-gray-900/30', text: 'text-gray-800 dark:text-gray-200', icon: XCircle, label: 'İade İptal Edildi' }
       }
     };
 
@@ -277,9 +389,24 @@ export default function ProfilePage() {
     if (!message.text) return null;
 
     const alertConfig = {
-      success: { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-800', icon: CheckCircle },
-      danger: { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-800', icon: XCircle },
-      warning: { bg: 'bg-yellow-50', border: 'border-yellow-200', text: 'text-yellow-800', icon: AlertCircle }
+      success: { 
+        bg: 'bg-green-50 dark:bg-green-900/20', 
+        border: 'border-green-200 dark:border-green-800', 
+        text: 'text-green-800 dark:text-green-200', 
+        icon: CheckCircle 
+      },
+      danger: { 
+        bg: 'bg-red-50 dark:bg-red-900/20', 
+        border: 'border-red-200 dark:border-red-800', 
+        text: 'text-red-800 dark:text-red-200', 
+        icon: XCircle 
+      },
+      warning: { 
+        bg: 'bg-yellow-50 dark:bg-yellow-900/20', 
+        border: 'border-yellow-200 dark:border-yellow-800', 
+        text: 'text-yellow-800 dark:text-yellow-200', 
+        icon: AlertCircle 
+      }
     };
 
     const config = alertConfig[message.type] || alertConfig.warning;
@@ -299,7 +426,7 @@ export default function ProfilePage() {
     return (
       <div className="flex justify-center items-center py-20">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        <span className="ml-3 text-gray-600">Profil yükleniyor...</span>
+        <span className="ml-3 text-gray-600 dark:text-gray-300">Profil yükleniyor...</span>
       </div>
     );
   }
@@ -331,11 +458,13 @@ export default function ProfilePage() {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex space-x-1 mb-8 bg-gray-100 p-1 rounded-lg">
+      <div className="flex space-x-1 mb-8 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
         {[
           { id: 'profile', label: 'Profil Bilgileri', icon: User },
           { id: 'orders', label: 'Siparişlerim', icon: ShoppingBag },
+          { id: 'returns', label: 'Taleplerim', icon: RefreshCw },
           { id: 'appointments', label: 'Randevularım', icon: Calendar },
+          { id: 'liked', label: 'Beğendiklerim', icon: Heart },
           { id: 'settings', label: 'Ayarlar', icon: Settings }
         ].map((tab) => {
           const Icon = tab.icon;
@@ -345,8 +474,8 @@ export default function ProfilePage() {
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center px-4 py-2 rounded-md font-medium transition-colors ${
                 activeTab === tab.id
-                  ? 'bg-white text-blue-600 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm'
+                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
               }`}
             >
               <Icon className="w-4 h-4 mr-2" />
@@ -364,38 +493,38 @@ export default function ProfilePage() {
           <>
             {/* Profil Bilgileri */}
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+                <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-6 flex items-center">
                   <User className="w-5 h-5 mr-2 text-blue-600" />
                   Profil Bilgileri
                 </h2>
                 <div className="space-y-4">
                   <div className="flex items-center space-x-3">
-                    <User className="w-5 h-5 text-gray-400" />
+                    <User className="w-5 h-5 text-gray-400 dark:text-gray-500" />
                     <div>
-                      <div className="text-sm text-gray-500">Ad Soyad</div>
-                      <div className="font-medium">{user?.name || 'Belirtilmemiş'}</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">Ad Soyad</div>
+                      <div className="font-medium text-gray-900 dark:text-white">{user?.name || 'Belirtilmemiş'}</div>
                     </div>
                   </div>
                   <div className="flex items-center space-x-3">
-                    <Mail className="w-5 h-5 text-gray-400" />
+                    <Mail className="w-5 h-5 text-gray-400 dark:text-gray-500" />
                     <div>
-                      <div className="text-sm text-gray-500">E-posta</div>
-                      <div className="font-medium">{user?.email || 'Belirtilmemiş'}</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">E-posta</div>
+                      <div className="font-medium text-gray-900 dark:text-white">{user?.email || 'Belirtilmemiş'}</div>
                     </div>
                   </div>
                   <div className="flex items-center space-x-3">
-                    <Phone className="w-5 h-5 text-gray-400" />
+                    <Phone className="w-5 h-5 text-gray-400 dark:text-gray-500" />
                     <div>
-                      <div className="text-sm text-gray-500">Telefon</div>
-                      <div className="font-medium">{user?.phone || 'Belirtilmemiş'}</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">Telefon</div>
+                      <div className="font-medium text-gray-900 dark:text-white">{user?.phone || 'Belirtilmemiş'}</div>
                     </div>
                   </div>
                   <div className="flex items-start space-x-3">
-                    <MapPin className="w-5 h-5 text-gray-400 mt-1" />
+                    <MapPin className="w-5 h-5 text-gray-400 dark:text-gray-500 mt-1" />
                     <div>
-                      <div className="text-sm text-gray-500">Adres</div>
-                      <div className="font-medium">{user?.address || 'Belirtilmemiş'}</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">Adres</div>
+                      <div className="font-medium text-gray-900 dark:text-white">{user?.address || 'Belirtilmemiş'}</div>
                     </div>
                   </div>
                 </div>
@@ -405,40 +534,40 @@ export default function ProfilePage() {
             {/* İstatistikler */}
             <div className="lg:col-span-2">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <div className="bg-white rounded-lg shadow-lg p-6 text-center">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 text-center">
                   <ShoppingBag className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-                  <div className="text-2xl font-bold text-gray-900">{orders.length}</div>
-                  <div className="text-gray-600">Toplam Sipariş</div>
+                  <div className="text-2xl font-bold text-gray-900 dark:text-white">{orders.length}</div>
+                  <div className="text-gray-600 dark:text-gray-300">Toplam Sipariş</div>
                 </div>
-                <div className="bg-white rounded-lg shadow-lg p-6 text-center">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 text-center">
                   <Calendar className="w-12 h-12 text-green-600 mx-auto mb-4" />
-                  <div className="text-2xl font-bold text-gray-900">{appointments.length}</div>
-                  <div className="text-gray-600">Toplam Randevu</div>
+                  <div className="text-2xl font-bold text-gray-900 dark:text-white">{appointments.length}</div>
+                  <div className="text-gray-600 dark:text-gray-300">Toplam Randevu</div>
                 </div>
-                <div className="bg-white rounded-lg shadow-lg p-6 text-center">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 text-center">
                   <Award className="w-12 h-12 text-yellow-600 mx-auto mb-4" />
-                  <div className="text-2xl font-bold text-gray-900">
+                  <div className="text-2xl font-bold text-gray-900 dark:text-white">
                     {orders.reduce((total, order) => total + order.items.filter(item => item.rating).length, 0)}
                   </div>
-                  <div className="text-gray-600">Puanlanan Ürün</div>
+                  <div className="text-gray-600 dark:text-gray-300">Puanlanan Ürün</div>
                 </div>
               </div>
 
               {/* Son Aktiviteler */}
-              <div className="bg-white rounded-lg shadow-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Son Aktiviteler</h3>
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Son Aktiviteler</h3>
                 <div className="space-y-4">
                   {orders.slice(0, 3).map((order) => (
-                    <div key={order.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div key={order.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                       <div className="flex items-center space-x-3">
                         <CreditCard className="w-8 h-8 text-blue-600" />
                         <div>
-                          <div className="font-medium">Sipariş #{order.id}</div>
-                          <div className="text-sm text-gray-500">{formatDate(order.createdAt)}</div>
+                          <div className="font-medium text-gray-900 dark:text-white">Sipariş #{order.id}</div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400">{formatDate(order.createdAt)}</div>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="font-semibold">{formatPrice(order.total)} ₺</div>
+                        <div className="font-semibold text-gray-900 dark:text-white">{formatPrice(order.total)} ₺</div>
                         {getStatusBadge(order.status, 'order')}
                       </div>
                     </div>
@@ -451,9 +580,9 @@ export default function ProfilePage() {
 
         {activeTab === 'orders' && (
           <div className="lg:col-span-3">
-            <div className="bg-white rounded-lg shadow-lg">
-              <div className="p-6 border-b">
-                <h2 className="text-xl font-semibold text-gray-800 flex items-center">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+              <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                <h2 className="text-xl font-semibold text-gray-800 dark:text-white flex items-center">
                   <ShoppingBag className="w-5 h-5 mr-2 text-blue-600" />
                   Siparişlerim ({orders.length})
                 </h2>
@@ -461,45 +590,45 @@ export default function ProfilePage() {
               
               {orders.length === 0 ? (
                 <div className="text-center py-12">
-                  <ShoppingBag className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Henüz sipariş yok</h3>
-                  <p className="text-gray-500">İlk siparişinizi vermek için ürünlere göz atın.</p>
+                  <ShoppingBag className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Henüz sipariş yok</h3>
+                  <p className="text-gray-500 dark:text-gray-400">İlk siparişinizi vermek için ürünlere göz atın.</p>
                 </div>
               ) : (
-                <div className="divide-y divide-gray-200">
+                <div className="divide-y divide-gray-200 dark:divide-gray-700">
                   {orders.map((order) => (
                     <div key={order.id} className="p-6">
                       <div className="flex justify-between items-start mb-4">
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-900">Sipariş #{order.id}</h3>
-                          <p className="text-gray-500 flex items-center mt-1">
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Sipariş #{order.id}</h3>
+                          <p className="text-gray-500 dark:text-gray-400 flex items-center mt-1">
                             <Calendar className="w-4 h-4 mr-1" />
                             {formatDate(order.createdAt)}
                           </p>
                         </div>
                         <div className="text-right">
-                          <div className="text-xl font-bold text-gray-900">{formatPrice(order.total)} ₺</div>
+                          <div className="text-xl font-bold text-gray-900 dark:text-white">{formatPrice(order.total)} ₺</div>
                           {getStatusBadge(order.status, 'order')}
                         </div>
                       </div>
 
                       <div className="grid gap-4">
                         {order.items.map((item) => (
-                          <div key={item.id} className="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+                          <div key={item.id} className="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                             <div className="flex items-center space-x-4">
-                              <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
-                                <Package className="w-8 h-8 text-gray-400" />
+                              <div className="w-16 h-16 bg-gray-200 dark:bg-gray-600 rounded-lg flex items-center justify-center">
+                                <Package className="w-8 h-8 text-gray-400 dark:text-gray-500" />
                               </div>
                               <div>
-                                <h4 className="font-medium text-gray-900">{item.product.name}</h4>
-                                <p className="text-gray-500">
+                                <h4 className="font-medium text-gray-900 dark:text-white">{item.product.name}</h4>
+                                <p className="text-gray-500 dark:text-gray-400">
                                   {item.quantity} adet × {formatPrice(item.price)} ₺
                                 </p>
                               </div>
                             </div>
                             <div className="text-right">
-                              <div className="font-semibold">{formatPrice(item.quantity * item.price)} ₺</div>
-                              <div className="mt-2">
+                              <div className="font-semibold text-gray-900 dark:text-white">{formatPrice(item.quantity * item.price)} ₺</div>
+                              <div className="mt-2 flex flex-col space-y-2">
                                 {item.rating ? (
                                   <div className="flex items-center text-yellow-500">
                                     <Star className="w-4 h-4 mr-1 fill-current" />
@@ -508,10 +637,22 @@ export default function ProfilePage() {
                                 ) : (
                                   <button
                                     onClick={() => handleRatingClick(item)}
-                                    className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium text-left"
                                   >
                                     Puanla
                                   </button>
+                                )}
+                                {canCreateReturn(item.id) ? (
+                                  <button
+                                    onClick={() => handleReturnClick(item)}
+                                    className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium text-left"
+                                  >
+                                    İade Talebi
+                                  </button>
+                                ) : (
+                                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                                    {getStatusBadge(getReturnStatusForItem(item.id), 'return')}
+                                  </div>
                                 )}
                               </div>
                             </div>
@@ -526,11 +667,148 @@ export default function ProfilePage() {
           </div>
         )}
 
+        {activeTab === 'returns' && (
+          <div className="lg:col-span-3">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+              <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                <h2 className="text-xl font-semibold text-gray-800 dark:text-white flex items-center">
+                  <RefreshCw className="w-5 h-5 mr-2 text-blue-600" />
+                  İade Taleplerim ({returns.length})
+                </h2>
+              </div>
+              
+              {returnsLoading ? (
+                <div className="text-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                  <p className="text-gray-500 dark:text-gray-400">İade talepleri yükleniyor...</p>
+                </div>
+              ) : returns.length === 0 ? (
+                <div className="text-center py-12">
+                  <RefreshCw className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Henüz iade talebiniz yok</h3>
+                  <p className="text-gray-500 dark:text-gray-400">Satın aldığınız ürünler için iade talebi oluşturabilirsiniz.</p>
+                </div>
+              ) : (
+                <div className="grid gap-6 p-6">
+                  {returns.map((returnItem) => (
+                    <div key={returnItem.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                            {returnItem.orderItem.product.name}
+                          </h3>
+                          <div className="flex items-center text-gray-500 dark:text-gray-400 mt-2 space-x-4">
+                            <span className="flex items-center">
+                              <Calendar className="w-4 h-4 mr-1" />
+                              {formatDate(returnItem.createdAt)}
+                            </span>
+                            <span className="flex items-center">
+                              <Package className="w-4 h-4 mr-1" />
+                              Sipariş #{returnItem.orderItem.order.id}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-3">
+                          {getStatusBadge(returnItem.status, 'return')}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                          <h4 className="font-medium text-gray-900 dark:text-white mb-2">İade Nedeni</h4>
+                          <p className="text-gray-700 dark:text-gray-300">{returnItem.reason}</p>
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-gray-900 dark:text-white mb-2">İade Türü</h4>
+                          <p className="text-gray-700 dark:text-gray-300">
+                            {returnItem.returnType === 'REFUND' ? 'Para İadesi' : 
+                             returnItem.returnType === 'EXCHANGE' ? 'Ürün Değişimi' : 'Kredi'}
+                          </p>
+                        </div>
+                      </div>
+
+                      {returnItem.description && (
+                        <div className="mb-4">
+                          <h4 className="font-medium text-gray-900 dark:text-white mb-2">Açıklama</h4>
+                          <p className="text-gray-700 dark:text-gray-300">{returnItem.description}</p>
+                        </div>
+                      )}
+
+                      {returnItem.adminNotes && (
+                        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                          <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">Admin Notu</h4>
+                          <p className="text-blue-800 dark:text-blue-200">{returnItem.adminNotes}</p>
+                        </div>
+                      )}
+
+                      {/* Kargo Bilgileri */}
+                      {(returnItem.status === 'SHIPPING_REQUIRED' || returnItem.status === 'SHIPPED' || returnItem.status === 'RECEIVED') && (
+                        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mt-4">
+                          <h4 className="font-medium text-green-900 dark:text-green-100 mb-3 flex items-center">
+                            <Truck className="w-4 h-4 mr-2" />
+                            Kargo Bilgileri
+                          </h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {returnItem.courierCompany && (
+                              <div>
+                                <span className="text-sm font-medium text-green-800 dark:text-green-200">Kargo Firması:</span>
+                                <p className="text-green-700 dark:text-green-300">{returnItem.courierCompany}</p>
+                              </div>
+                            )}
+                            {returnItem.trackingNumber && (
+                              <div>
+                                <span className="text-sm font-medium text-green-800 dark:text-green-200">Takip Numarası:</span>
+                                <p className="text-green-700 dark:text-green-300">{returnItem.trackingNumber}</p>
+                              </div>
+                            )}
+                            {returnItem.shippingAddress && (
+                              <div className="md:col-span-2">
+                                <span className="text-sm font-medium text-green-800 dark:text-green-200">Gönderim Adresi:</span>
+                                <p className="text-green-700 dark:text-green-300">{returnItem.shippingAddress}</p>
+                              </div>
+                            )}
+                            {returnItem.shippingCost !== null && (
+                              <div>
+                                <span className="text-sm font-medium text-green-800 dark:text-green-200">Kargo Ücreti:</span>
+                                <p className="text-green-700 dark:text-green-300">
+                                  {returnItem.shippingCost === 0 ? 'Ücretsiz' : `${returnItem.shippingCost} ₺`}
+                                </p>
+                              </div>
+                            )}
+                            {returnItem.shippingInstructions && (
+                              <div className="md:col-span-2">
+                                <span className="text-sm font-medium text-green-800 dark:text-green-200">Kargo Talimatları:</span>
+                                <p className="text-green-700 dark:text-green-300">{returnItem.shippingInstructions}</p>
+                              </div>
+                            )}
+                            {returnItem.shippedAt && (
+                              <div>
+                                <span className="text-sm font-medium text-green-800 dark:text-green-200">Kargolandığı Tarih:</span>
+                                <p className="text-green-700 dark:text-green-300">{formatDate(returnItem.shippedAt)}</p>
+                              </div>
+                            )}
+                            {returnItem.receivedAt && (
+                              <div>
+                                <span className="text-sm font-medium text-green-800 dark:text-green-200">Mağazada Alındığı Tarih:</span>
+                                <p className="text-green-700 dark:text-green-300">{formatDate(returnItem.receivedAt)}</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {activeTab === 'appointments' && (
           <div className="lg:col-span-3">
-            <div className="bg-white rounded-lg shadow-lg">
-              <div className="p-6 border-b">
-                <h2 className="text-xl font-semibold text-gray-800 flex items-center">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+              <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                <h2 className="text-xl font-semibold text-gray-800 dark:text-white flex items-center">
                   <Calendar className="w-5 h-5 mr-2 text-blue-600" />
                   Randevularım ({appointments.length})
                 </h2>
@@ -538,18 +816,18 @@ export default function ProfilePage() {
               
               {appointments.length === 0 ? (
                 <div className="text-center py-12">
-                  <Calendar className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Henüz randevu yok</h3>
-                  <p className="text-gray-500">İlk randevunuzu almak için servislerimize göz atın.</p>
+                  <Calendar className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Henüz randevu yok</h3>
+                  <p className="text-gray-500 dark:text-gray-400">İlk randevunuzu almak için servislerimize göz atın.</p>
                 </div>
               ) : (
                 <div className="grid gap-6 p-6">
                   {appointments.map((appointment) => (
-                    <div key={appointment.id} className="border border-gray-200 rounded-lg p-6">
+                    <div key={appointment.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-6">
                       <div className="flex justify-between items-start mb-4">
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-900">{appointment.serviceType}</h3>
-                          <div className="flex items-center text-gray-500 mt-2 space-x-4">
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{appointment.serviceType}</h3>
+                          <div className="flex items-center text-gray-500 dark:text-gray-400 mt-2 space-x-4">
                             <span className="flex items-center">
                               <Calendar className="w-4 h-4 mr-1" />
                               {formatDate(appointment.date)}
@@ -564,7 +842,7 @@ export default function ProfilePage() {
                           {getStatusBadge(appointment.status, 'appointment')}
                           <button
                             onClick={() => setSelectedAppointment(appointment)}
-                            className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+                            className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 dark:hover:bg-blue-900/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
                           >
                             <Eye className="w-4 h-4 mr-1" />
                             Detaylar
@@ -575,14 +853,14 @@ export default function ProfilePage() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {appointment.phone && (
                           <div className="flex items-center space-x-2">
-                            <Phone className="w-4 h-4 text-gray-400" />
-                            <span className="text-gray-700">{appointment.phone}</span>
+                            <Phone className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                            <span className="text-gray-700 dark:text-gray-300">{appointment.phone}</span>
                           </div>
                         )}
                         {appointment.address && (
                           <div className="flex items-start space-x-2">
-                            <MapPin className="w-4 h-4 text-gray-400 mt-0.5" />
-                            <span className="text-gray-700">{appointment.address}</span>
+                            <MapPin className="w-4 h-4 text-gray-400 dark:text-gray-500 mt-0.5" />
+                            <span className="text-gray-700 dark:text-gray-300">{appointment.address}</span>
                           </div>
                         )}
                       </div>
@@ -594,10 +872,98 @@ export default function ProfilePage() {
           </div>
         )}
 
+        {activeTab === 'liked' && (
+          <div className="lg:col-span-3">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg">
+              <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                <h2 className="text-xl font-semibold text-gray-800 dark:text-white flex items-center">
+                  <Heart className="w-5 h-5 mr-2 text-red-600" />
+                  Beğendiğim Ürünler ({likedProducts.length})
+                </h2>
+              </div>
+              
+              {likedProductsLoading ? (
+                <div className="text-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
+                  <p className="text-gray-500 dark:text-gray-400">Beğenilen ürünler yükleniyor...</p>
+                </div>
+              ) : likedProducts.length === 0 ? (
+                <div className="text-center py-12">
+                  <Heart className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Henüz beğendiğiniz ürün yok</h3>
+                  <p className="text-gray-500">Ürünleri beğenmek için ürün sayfalarını ziyaret edin.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-6">
+                  {likedProducts.map((product) => (
+                    <div key={product.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:shadow-lg transition-shadow">
+                      <div className="aspect-w-16 aspect-h-9 mb-3">
+                        {product.imageUrl ? (
+                          <img
+                            src={product.imageUrl}
+                            alt={product.name}
+                            className="w-full h-32 object-cover rounded-lg"
+                          />
+                        ) : (
+                          <div className="w-full h-32 bg-gray-200 dark:bg-gray-600 rounded-lg flex items-center justify-center">
+                            <Package className="w-8 h-8 text-gray-400 dark:text-gray-500" />
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <h3 className="font-semibold text-gray-900 dark:text-white text-sm">{product.name}</h3>
+                        <p className="text-gray-600 dark:text-gray-400 text-xs line-clamp-2">{product.description}</p>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-bold text-gray-900 dark:text-white">{formatPrice(product.price)} ₺</span>
+                          <span className={`px-2 py-1 text-xs rounded-full ${
+                            product.stock > 0 
+                              ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200' 
+                              : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200'
+                          }`}>
+                            {product.stock > 0 ? `Stokta (${product.stock})` : 'Stokta Yok'}
+                          </span>
+                        </div>
+                        
+                        <div className="flex space-x-2">
+                          <Link
+                            href={`/products/${product.id}`}
+                            className="flex-1 bg-blue-600 text-white py-1.5 px-3 rounded-lg text-center text-xs font-medium hover:bg-blue-700 transition-colors"
+                          >
+                            İncele
+                          </Link>
+                          <button
+                            onClick={() => {
+                              const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+                              const existingItem = cart.find(item => item.id === product.id);
+                              if (existingItem) {
+                                existingItem.quantity += 1;
+                              } else {
+                                cart.push({ ...product, quantity: 1 });
+                              }
+                              localStorage.setItem('cart', JSON.stringify(cart));
+                              window.dispatchEvent(new Event('storage'));
+                              alert('Ürün sepete eklendi!');
+                            }}
+                            disabled={product.stock <= 0}
+                            className="flex-1 bg-green-600 text-white py-1.5 px-3 rounded-lg text-center text-xs font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          >
+                            Sepete Ekle
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {activeTab === 'settings' && (
           <div className="lg:col-span-3">
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <h2 className="text-xl font-semibold text-gray-800 mb-6 flex items-center">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+              <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-6 flex items-center">
                 <Settings className="w-5 h-5 mr-2 text-blue-600" />
                 Profil Ayarları
               </h2>
@@ -605,38 +971,38 @@ export default function ProfilePage() {
               <form onSubmit={handleUpdateProfile} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Ad Soyad</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Ad Soyad</label>
                     <input
                       type="text"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">E-posta</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">E-posta</label>
                     <input
                       type="email"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Telefon</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Telefon</label>
                     <input
                       type="tel"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Adres</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Adres</label>
                     <textarea
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 h-24 resize-none"
+                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white h-24 resize-none"
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
                       placeholder="Adresinizi girin"
@@ -644,24 +1010,24 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                <div className="border-t pt-6">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">Şifre Değiştir</h3>
+                <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Şifre Değiştir</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Mevcut Şifre</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Mevcut Şifre</label>
                       <input
                         type="password"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
                         value={currentPassword}
                         onChange={(e) => setCurrentPassword(e.target.value)}
                         placeholder="Şifre değiştirmek için doldurun"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Yeni Şifre</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Yeni Şifre</label>
                       <input
                         type="password"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
                         placeholder="Yeni şifrenizi girin"
@@ -802,6 +1168,115 @@ export default function ProfilePage() {
                 onClick={() => setSelectedAppointment(null)}
               >
                 Kapat
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* İade Talebi Modal */}
+      {showReturnModal && selectedReturnItem && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-gray-900 dark:bg-opacity-75 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-11/12 max-w-2xl shadow-lg rounded-md bg-white dark:bg-gray-800">
+            <div className="mt-3">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                  İade Talebi Oluştur
+                </h3>
+                <button
+                  onClick={handleCloseReturnModal}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              
+              <div className="space-y-6">
+                {/* Ürün Bilgileri */}
+                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                  <h4 className="font-medium text-gray-900 dark:text-white mb-2">Ürün Bilgileri</h4>
+                  <div className="flex items-center space-x-3">
+                    <div className="w-12 h-12 bg-gray-200 dark:bg-gray-600 rounded-lg flex items-center justify-center">
+                      <Package className="w-6 h-6 text-gray-500 dark:text-gray-400" />
+                    </div>
+                    <div>
+                      <h5 className="font-medium text-gray-900 dark:text-white">{selectedReturnItem.product.name}</h5>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {selectedReturnItem.quantity} adet × {formatPrice(selectedReturnItem.price)} ₺
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* İade Nedeni */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    İade Nedeni *
+                  </label>
+                  <select
+                    value={returnReason}
+                    onChange={(e) => setReturnReason(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                    required
+                  >
+                    <option value="">İade nedenini seçin</option>
+                    <option value="Ürün hasarlı geldi">Ürün hasarlı geldi</option>
+                    <option value="Ürün beklentilerimi karşılamadı">Ürün beklentilerimi karşılamadı</option>
+                    <option value="Yanlış ürün gönderildi">Yanlış ürün gönderildi</option>
+                    <option value="Ürün çalışmıyor">Ürün çalışmıyor</option>
+                    <option value="Boyut/renk uygun değil">Boyut/renk uygun değil</option>
+                    <option value="Diğer">Diğer</option>
+                  </select>
+                </div>
+
+                {/* İade Türü */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    İade Türü *
+                  </label>
+                  <select
+                    value={returnType}
+                    onChange={(e) => setReturnType(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                    required
+                  >
+                    <option value="REFUND">Para İadesi</option>
+                    <option value="EXCHANGE">Ürün Değişimi</option>
+                    <option value="CREDIT">Kredi</option>
+                  </select>
+                </div>
+
+                {/* Açıklama */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Açıklama
+                  </label>
+                  <textarea
+                    value={returnDescription}
+                    onChange={(e) => setReturnDescription(e.target.value)}
+                    rows={4}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                    placeholder="İade talebiniz hakkında detaylı bilgi verebilirsiniz..."
+                  />
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse mt-6">
+              <button
+                type="button"
+                onClick={() => handleCreateReturn(selectedReturnItem)}
+                disabled={!returnReason || !returnType}
+                className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-200"
+              >
+                İade Talebi Oluştur
+              </button>
+              <button
+                type="button"
+                onClick={handleCloseReturnModal}
+                className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-200"
+              >
+                İptal
               </button>
             </div>
           </div>

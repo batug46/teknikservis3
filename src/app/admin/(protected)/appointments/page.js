@@ -129,7 +129,7 @@ export default function AdminAppointmentsPage() {
           ));
           // Selected appointment için de güncelle
           if (selectedAppointment && selectedAppointment.id === id) {
-            setSelectedAppointment(updatedAppointment);
+          setSelectedAppointment(updatedAppointment);
           }
         } else {
           alert('Durum güncellenemedi.');
@@ -138,7 +138,7 @@ export default function AdminAppointmentsPage() {
           console.error("Randevu güncellenirken hata:", error);
           alert('Bir hata oluştu.');
       } finally {
-          setUpdating(false);
+        setUpdating(false);
       }
     };
 
@@ -153,13 +153,13 @@ export default function AdminAppointmentsPage() {
             setAllAppointments(allAppointments.filter(appt => appt.id !== id));
             setSelectedAppointment(null);
           } else {
-            alert('Randevu silinemedi.');
+                alert('Randevu silinemedi.');
           }
         } catch (error) {
             console.error("Randevu silinirken hata:", error);
             alert('Bir hata oluştu.');
+            }
         }
-      }
     };
 
     const getStatusBadge = (status) => {
@@ -197,7 +197,7 @@ export default function AdminAppointmentsPage() {
             label: status 
         };
         const Icon = badge.icon;
-        
+
         return (
             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${badge.bg} ${badge.text}`}>
                 <Icon className="w-3 h-3 mr-1" />
@@ -225,7 +225,7 @@ export default function AdminAppointmentsPage() {
         <div className="space-y-6">
             {/* Header */}
             <div className="flex items-center justify-between">
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-900 flex items-center">
+                <h1 className="text-3xl font-bold text-gray-800 dark:text-white flex items-center">
                     <Calendar className="w-8 h-8 mr-3 text-green-600 dark:text-green-400" />
                     Randevu Yönetimi
                 </h1>
@@ -239,7 +239,7 @@ export default function AdminAppointmentsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                     {/* Arama */}
                     <div className="relative lg:col-span-2">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-4 h-4" />
                         <input
                             type="text"
                             placeholder="Randevu ID, müşteri, hizmet veya problem ara..."
@@ -341,7 +341,7 @@ export default function AdminAppointmentsPage() {
                                     <td className="px-3 py-4">
                                         <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                                             {appointment.user?.name || 'Silinmiş Kullanıcı'}
-                                        </div>
+                                            </div>
                                         <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
                                             {appointment.user?.email}
                                         </div>
@@ -424,10 +424,10 @@ export default function AdminAppointmentsPage() {
                 <div className="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-gray-900 dark:bg-opacity-75 overflow-y-auto h-full w-full z-50">
                     <div className="relative top-20 mx-auto p-5 border w-11/12 max-w-2xl shadow-lg rounded-md bg-white dark:bg-gray-800">
                         <div className="mt-3">
-                            <div className="flex items-center justify-between mb-6">
+                                <div className="flex items-center justify-between mb-6">
                                 <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                                     Randevu Detayları - #{selectedAppointment.id}
-                                </h3>
+                                    </h3>
                                 <div className="text-sm text-gray-500 dark:text-gray-400">
                                     {new Date(selectedAppointment.date).toLocaleDateString('tr-TR', {
                                         year: 'numeric',
@@ -435,66 +435,66 @@ export default function AdminAppointmentsPage() {
                                         day: 'numeric'
                                     })} - {selectedAppointment.time}
                                 </div>
-                            </div>
-                            
-                            <div className="space-y-6">
-                                {/* Durum Güncelleme */}
-                                <div>
-                                    <h6 className="text-base font-bold text-gray-900 dark:text-gray-100 mb-3">RANDEVU DURUMU</h6>
-                                    <div className="flex flex-wrap gap-2">
-                                        <button
-                                            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
-                                                selectedAppointment.status === 'PENDING'
-                                                    ? 'bg-yellow-600 text-white' 
-                                                    : 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300'
-                                            }`}
-                                            onClick={() => handleStatusChange(selectedAppointment.id, 'PENDING')}
-                                            disabled={updating}
-                                        >
-                                            <Clock className="w-4 h-4 inline mr-1" />
-                                            Bekliyor
-                                        </button>
-                                        <button
-                                            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
-                                                selectedAppointment.status === 'CONFIRMED'
-                                                    ? 'bg-blue-600 text-white' 
-                                                    : 'bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300'
-                                            }`}
-                                            onClick={() => handleStatusChange(selectedAppointment.id, 'CONFIRMED')}
-                                            disabled={updating}
-                                        >
-                                            <CheckCircle className="w-4 h-4 inline mr-1" />
-                                            Onaylandı
-                                        </button>
-                                        <button
-                                            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
-                                                selectedAppointment.status === 'IN_PROGRESS'
-                                                    ? 'bg-purple-600 text-white' 
-                                                    : 'bg-purple-100 text-purple-800 hover:bg-purple-200 dark:bg-purple-900/30 dark:text-purple-300'
-                                            }`}
-                                            onClick={() => handleStatusChange(selectedAppointment.id, 'IN_PROGRESS')}
-                                            disabled={updating}
-                                        >
-                                            <PlayCircle className="w-4 h-4 inline mr-1" />
-                                            Devam Ediyor
-                                        </button>
-                                        <button
-                                            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
-                                                selectedAppointment.status === 'CANCELLED'
-                                                    ? 'bg-red-600 text-white' 
-                                                    : 'bg-red-100 text-red-800 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300'
-                                            }`}
-                                            onClick={() => handleStatusChange(selectedAppointment.id, 'CANCELLED')}
-                                            disabled={updating}
-                                        >
-                                            <XCircle className="w-4 h-4 inline mr-1" />
-                                            İptal Edildi
-                                        </button>
-                                    </div>
                                 </div>
 
+                            <div className="space-y-6">
+                                {/* Durum Güncelleme */}
+                                    <div>
+                                    <h6 className="text-base font-bold text-gray-900 dark:text-gray-100 mb-3">RANDEVU DURUMU</h6>
+                                        <div className="flex flex-wrap gap-2">
+                                            <button
+                                                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+                                                    selectedAppointment.status === 'PENDING'
+                                                        ? 'bg-yellow-600 text-white' 
+                                                    : 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300'
+                                                }`}
+                                                onClick={() => handleStatusChange(selectedAppointment.id, 'PENDING')}
+                                                disabled={updating}
+                                            >
+                                            <Clock className="w-4 h-4 inline mr-1" />
+                                                Bekliyor
+                                            </button>
+                                            <button
+                                                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+                                                    selectedAppointment.status === 'CONFIRMED'
+                                                    ? 'bg-blue-600 text-white' 
+                                                    : 'bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300'
+                                                }`}
+                                                onClick={() => handleStatusChange(selectedAppointment.id, 'CONFIRMED')}
+                                                disabled={updating}
+                                            >
+                                                <CheckCircle className="w-4 h-4 inline mr-1" />
+                                                Onaylandı
+                                            </button>
+                                            <button
+                                                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+                                                    selectedAppointment.status === 'IN_PROGRESS'
+                                                    ? 'bg-purple-600 text-white' 
+                                                    : 'bg-purple-100 text-purple-800 hover:bg-purple-200 dark:bg-purple-900/30 dark:text-purple-300'
+                                                }`}
+                                                onClick={() => handleStatusChange(selectedAppointment.id, 'IN_PROGRESS')}
+                                                disabled={updating}
+                                            >
+                                                <PlayCircle className="w-4 h-4 inline mr-1" />
+                                                Devam Ediyor
+                                            </button>
+                                            <button
+                                                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+                                                    selectedAppointment.status === 'CANCELLED'
+                                                        ? 'bg-red-600 text-white' 
+                                                    : 'bg-red-100 text-red-800 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300'
+                                                }`}
+                                                onClick={() => handleStatusChange(selectedAppointment.id, 'CANCELLED')}
+                                                disabled={updating}
+                                            >
+                                                <XCircle className="w-4 h-4 inline mr-1" />
+                                                İptal Edildi
+                                            </button>
+                                        </div>
+                                    </div>
+
                                 {/* Müşteri Bilgileri */}
-                                <div>
+                                    <div>
                                     <h6 className="text-base font-bold text-gray-900 dark:text-gray-100 mb-3">MÜŞTERİ BİLGİLERİ</h6>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                                         <div><span className="font-semibold text-gray-700 dark:text-gray-300">İsim:</span> {selectedAppointment.user?.name || 'Belirtilmemiş'}</div>
@@ -505,32 +505,32 @@ export default function AdminAppointmentsPage() {
                                 </div>
 
                                 {/* Randevu Bilgileri */}
-                                <div>
+                                                <div>
                                     <h6 className="text-base font-bold text-gray-900 dark:text-gray-100 mb-3">RANDEVU BİLGİLERİ</h6>
                                     <div className="space-y-2 text-sm">
                                         <div><span className="font-semibold text-gray-700 dark:text-gray-300">Hizmet:</span> {selectedAppointment.serviceType}</div>
                                         <div><span className="font-semibold text-gray-700 dark:text-gray-300">Özel Notlar:</span> {selectedAppointment.description || 'Belirtilmemiş'}</div>
                                         <div><span className="font-semibold text-gray-700 dark:text-gray-300">Fiyat:</span> {selectedAppointment.price ? `${selectedAppointment.price} ₺` : 'Belirtilmemiş'}</div>
                                         <div><span className="font-semibold text-gray-700 dark:text-gray-300">Oluşturulma:</span> {new Date(selectedAppointment.createdAt).toLocaleDateString('tr-TR', {
-                                            year: 'numeric',
-                                            month: 'long',
-                                            day: 'numeric',
-                                            hour: '2-digit',
-                                            minute: '2-digit'
+                                                    year: 'numeric',
+                                                    month: 'long',
+                                                    day: 'numeric',
+                                                    hour: '2-digit',
+                                                    minute: '2-digit'
                                         })}</div>
+                                    </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        
+                            
                         <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse mt-6">
-                            <button
-                                type="button"
+                                <button
+                                    type="button"
                                 className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-gray-600 dark:bg-gray-500 text-base font-medium text-white hover:bg-gray-700 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-200"
-                                onClick={() => setSelectedAppointment(null)}
-                            >
-                                Kapat
-                            </button>
+                                    onClick={() => setSelectedAppointment(null)}
+                                >
+                                    Kapat
+                                </button>
                         </div>
                     </div>
                 </div>

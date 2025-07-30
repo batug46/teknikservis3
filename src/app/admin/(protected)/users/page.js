@@ -9,9 +9,9 @@ const FeedbackBanner = ({ type, message, onDismiss }) => {
   if (!message) return null;
 
   const isError = type === 'error';
-  const bgColor = isError ? 'bg-red-100' : 'bg-green-100';
-  const borderColor = isError ? 'border-red-400' : 'border-green-400';
-  const textColor = isError ? 'text-red-700' : 'text-green-700';
+  const bgColor = isError ? 'bg-red-100 dark:bg-red-900/20' : 'bg-green-100 dark:bg-green-900/20';
+  const borderColor = isError ? 'border-red-400 dark:border-red-800' : 'border-green-400 dark:border-green-800';
+  const textColor = isError ? 'text-red-700 dark:text-red-200' : 'text-green-700 dark:text-green-200';
   const Icon = isError ? XCircle : CheckCircle;
 
   return (
@@ -63,11 +63,11 @@ const UserRow = ({ user, onRoleChange, onDeleteRequest }) => {
           className="text-sm border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200"
           disabled={isProtectedAdmin}
         >
-          <option value="">İşlem Seç</option>
-          <option value="change-role">
+          <option value="" className="text-gray-700 dark:text-gray-200">İşlem Seç</option>
+          <option value="change-role" className="text-gray-700 dark:text-gray-200">
             {user.role === 'admin' ? 'Kullanıcı Yap' : 'Admin Yap'}
           </option>
-          <option value="delete">Sil</option>
+          <option value="delete" className="text-gray-700 dark:text-gray-200">Sil</option>
         </select>
       </td>
     </tr>
@@ -215,8 +215,8 @@ export default function UsersPage() {
         />
         
         {/* Header */}
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">Kullanıcı Yönetimi</h1>
+                 <div className="flex justify-between items-center">
+           <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Kullanıcı Yönetimi</h1>
           <Link href="/admin/users/new" className="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 dark:bg-indigo-500 text-white rounded-md hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors">
             <PlusCircle className="w-5 h-5 mr-2" />
             Yeni Kullanıcı
@@ -228,13 +228,13 @@ export default function UsersPage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Arama */}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-4 h-4" />
               <input
                 type="text"
                 placeholder="İsim, email veya telefon ara..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm"
+                className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm placeholder-gray-500 dark:placeholder-gray-400"
               />
             </div>
 
@@ -245,9 +245,9 @@ export default function UsersPage() {
                 onChange={(e) => setRoleFilter(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm"
               >
-                <option value="all">Tüm Roller</option>
-                <option value="admin">Admin</option>
-                <option value="user">Kullanıcı</option>
+                <option value="all" className="text-gray-900 dark:text-gray-100">Tüm Roller</option>
+                <option value="admin" className="text-gray-900 dark:text-gray-100">Admin</option>
+                <option value="user" className="text-gray-900 dark:text-gray-100">Kullanıcı</option>
               </select>
             </div>
 
@@ -258,9 +258,9 @@ export default function UsersPage() {
                 onChange={(e) => setSortBy(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm"
               >
-                <option value="id">ID'ye Göre</option>
-                <option value="name">İsme Göre</option>
-                <option value="email">Email'e Göre</option>
+                <option value="id" className="text-gray-900 dark:text-gray-100">ID'ye Göre</option>
+                <option value="name" className="text-gray-900 dark:text-gray-100">İsme Göre</option>
+                <option value="email" className="text-gray-900 dark:text-gray-100">Email'e Göre</option>
               </select>
             </div>
 
@@ -268,7 +268,7 @@ export default function UsersPage() {
             <div className="flex gap-2">
               <button
                 onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                className="flex items-center justify-center px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm"
+                className="flex items-center justify-center px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm text-gray-700 dark:text-gray-300"
                 title={sortOrder === 'asc' ? 'Artan' : 'Azalan'}
               >
                 {sortOrder === 'asc' ? <SortAsc className="w-4 h-4" /> : <SortDesc className="w-4 h-4" />}
@@ -297,12 +297,12 @@ export default function UsersPage() {
             <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
               <thead className="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-50 dark:bg-gray-700">
                 <tr>
-                  <th scope="col" className="px-6 py-3">ID</th>
-                  <th scope="col" className="px-6 py-3">İsim</th>
-                  <th scope="col" className="px-6 py-3">Email</th>
-                  <th scope="col" className="px-6 py-3">Telefon</th>
-                  <th scope="col" className="px-6 py-3">Rol</th>
-                  <th scope="col" className="px-6 py-3">
+                  <th scope="col" className="px-6 py-3 text-gray-700 dark:text-gray-300">ID</th>
+                  <th scope="col" className="px-6 py-3 text-gray-700 dark:text-gray-300">İsim</th>
+                  <th scope="col" className="px-6 py-3 text-gray-700 dark:text-gray-300">Email</th>
+                  <th scope="col" className="px-6 py-3 text-gray-700 dark:text-gray-300">Telefon</th>
+                  <th scope="col" className="px-6 py-3 text-gray-700 dark:text-gray-300">Rol</th>
+                  <th scope="col" className="px-6 py-3 text-gray-700 dark:text-gray-300">
                     <span className="sr-only">İşlemler</span>
                   </th>
                 </tr>

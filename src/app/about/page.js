@@ -34,19 +34,19 @@ export default function AboutPage() {
       icon: Clock,
       title: "13 Yıllık Deneyim",
       description: "Sektörde edindiğimiz tecrübe ile en zorlu problemlere bile çözüm üretiyoruz.",
-      color: "bg-blue-100 text-blue-600"
+      color: "bg-blue-100 dark:bg-blue-900/30 text-blue-600"
     },
     {
       icon: Users,
       title: "Uzman Ekip", 
       description: "Alanında uzman teknisyenlerimizle profesyonel hizmet sunuyoruz.",
-      color: "bg-green-100 text-green-600"
+      color: "bg-green-100 dark:bg-green-900/30 text-green-600"
     },
     {
       icon: Award,
       title: "Kalite Garantisi",
       description: "Tüm hizmetlerimizde müşteri memnuniyetini garanti ediyoruz.",
-      color: "bg-purple-100 text-purple-600"
+      color: "bg-purple-100 dark:bg-purple-900/30 text-purple-600"
     }
   ];
 
@@ -108,43 +108,43 @@ export default function AboutPage() {
 
 
 
-      {/* About Us Section */}
-      <section className="py-20 bg-gray-50">
+            {/* About Us Section */}
+      <section className="py-20 bg-gray-50 dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div>
               <div className="mb-8">
-                <span className="inline-block bg-blue-100 text-blue-600 px-4 py-2 rounded-full text-sm font-medium mb-4">
+                <span className="inline-block bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 px-4 py-2 rounded-full text-sm font-medium mb-4">
                   Hakkımızda
                 </span>
-                <h2 className="text-4xl font-bold text-gray-900 mb-6">
+                <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-6">
                   Teknolojide Güvenilir Ortağınız
                 </h2>
-                <p className="text-xl text-gray-600 mb-6 leading-relaxed">
+                <p className="text-xl text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
                   Efe Bilgisayar ve Güvenlik Sistemleri olarak, 2010 yılından bu yana teknoloji dünyasında güvenilir çözümler sunuyoruz.
                 </p>
-                <p className="text-gray-600 mb-8 leading-relaxed">
+                <p className="text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
                   Bilgisayar tamiri, güvenlik sistemleri kurulumu ve teknolojik danışmanlık alanlarında uzman ekibimizle, müşterilerimize en kaliteli hizmeti sunmayı hedefliyoruz. Her projede en yüksek standartları koruyarak, müşteri memnuniyetini ön planda tutuyoruz.
                 </p>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div className="flex items-center">
-                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                    <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mr-4">
                       <Star className="w-6 h-6 text-blue-600" />
-      </div>
-                  <div>
-                      <div className="font-semibold text-gray-900">Müşteri Memnuniyeti</div>
-                      <div className="text-gray-600">%98 memnuniyet oranı</div>
+                    </div>
+                    <div>
+                      <div className="font-semibold text-gray-900 dark:text-white">Müşteri Memnuniyeti</div>
+                      <div className="text-gray-600 dark:text-gray-300">%98 memnuniyet oranı</div>
                     </div>
                   </div>
                   <div className="flex items-center">
-                    <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+                    <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mr-4">
                       <CheckCircle className="w-6 h-6 text-green-600" />
-                </div>
+                    </div>
                     <div>
-                      <div className="font-semibold text-gray-900">Hızlı Çözüm</div>
-                      <div className="text-gray-600">24 saat içinde yanıt</div>
-              </div>
+                      <div className="font-semibold text-gray-900 dark:text-white">Hızlı Çözüm</div>
+                      <div className="text-gray-600 dark:text-gray-300">24 saat içinde yanıt</div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -176,16 +176,16 @@ export default function AboutPage() {
       </section>
 
       {/* Why Choose Us Section */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-white dark:bg-gray-800">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
-            <span className="inline-block bg-blue-100 text-blue-600 px-4 py-2 rounded-full text-sm font-medium mb-4">
+            <span className="inline-block bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 px-4 py-2 rounded-full text-sm font-medium mb-4">
               Avantajlarımız
             </span>
-            <h2 className="text-4xl font-bold text-gray-900 mb-6">
+            <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-6">
               Neden Bizi Tercih Etmelisiniz?
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
               Sektörde edindiğimiz deneyim ve uzman ekibimizle size en iyi hizmeti sunuyoruz
             </p>
           </div>
@@ -195,12 +195,12 @@ export default function AboutPage() {
               const Icon = advantage.icon;
               return (
                 <div key={index} className="group">
-                  <div className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 text-center group-hover:-translate-y-2">
-                    <div className={`w-16 h-16 ${advantage.color} rounded-2xl flex items-center justify-center mx-auto mb-6`}>
+                  <div className="bg-white dark:bg-gray-700 p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 text-center group-hover:-translate-y-2">
+                    <div className={`w-16 h-16 ${advantage.color} dark:bg-opacity-20 rounded-2xl flex items-center justify-center mx-auto mb-6`}>
                       <Icon className="w-8 h-8" />
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-4">{advantage.title}</h3>
-                    <p className="text-gray-600 leading-relaxed">{advantage.description}</p>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">{advantage.title}</h3>
+                    <p className="text-gray-600 dark:text-gray-300 leading-relaxed">{advantage.description}</p>
                   </div>
                 </div>
               );

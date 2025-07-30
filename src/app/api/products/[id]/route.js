@@ -21,6 +21,12 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: 'Bu ürün artık mevcut değil.' }, { status: 404 });
     }
 
+    // Görüntülenme sayısını artır
+    await prisma.product.update({
+      where: { id },
+      data: { viewCount: { increment: 1 } }
+    });
+
     return NextResponse.json(product);
   } catch (error) {
     console.error("API /api/products/[id] Error:", error);

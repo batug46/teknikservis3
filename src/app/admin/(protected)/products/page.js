@@ -11,7 +11,17 @@ export default function AdminProductsPage() {
   
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
-  const [productData, setProductData] = useState({ name: '', description: '', price: 0, imageUrl: '', category: 'hizmet', stock: 0 });
+  const [productData, setProductData] = useState({ 
+    name: '', 
+    description: '', 
+    price: 0, 
+    originalPrice: 0,
+    imageUrl: '', 
+    category: 'hizmet', 
+    stock: 0,
+    specifications: {},
+    images: []
+  });
   const [feedback, setFeedback] = useState({ show: false, type: '', message: '' });
 
   // Filtreleme state'leri
@@ -140,19 +150,32 @@ export default function AdminProductsPage() {
 
   const openModalForCreate = () => {
     setEditingProduct(null);
-    setProductData({ name: '', description: '', price: 0, imageUrl: '', category: 'hizmet', stock: 0 });
+    setProductData({ 
+      name: '', 
+      description: '', 
+      price: 0, 
+      originalPrice: 0,
+      imageUrl: '', 
+      category: 'hizmet', 
+      stock: 0,
+      specifications: {},
+      images: []
+    });
     setShowModal(true);
   };
 
-  const openModalForEdit = (product) => {
+    const openModalForEdit = (product) => {
     setEditingProduct(product);
-    setProductData({
-      name: product.name || '',
-      description: product.description || '',
-      price: product.price || 0,
-      imageUrl: product.imageUrl || '',
-      category: product.category || 'hizmet',
-      stock: product.stock || 0
+    setProductData({ 
+      name: product.name || '', 
+      description: product.description || '', 
+      price: product.price || 0, 
+      originalPrice: product.originalPrice || 0,
+      imageUrl: product.imageUrl || '', 
+      category: product.category || 'hizmet', 
+      stock: product.stock || 0,
+      specifications: product.specifications || {},
+      images: product.images || []
     });
     setShowModal(true);
   };
@@ -160,7 +183,16 @@ export default function AdminProductsPage() {
   const closeModal = () => {
     setShowModal(false);
     setEditingProduct(null);
-    setProductData({ name: '', description: '', price: 0, imageUrl: '', category: 'hizmet', stock: 0 });
+    setProductData({ 
+      name: '', 
+      description: '', 
+      price: 0, 
+      imageUrl: '', 
+      category: 'hizmet', 
+      stock: 0,
+      specifications: {},
+      images: []
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -352,7 +384,7 @@ export default function AdminProductsPage() {
 
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-900 flex items-center">
+        <h1 className="text-3xl font-bold text-gray-800 dark:text-white flex items-center">
           <Package className="w-8 h-8 mr-3 text-green-600 dark:text-green-400" />
           Ürün Yönetimi
         </h1>
@@ -375,7 +407,7 @@ export default function AdminProductsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           {/* Arama */}
           <div className="relative lg:col-span-2">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-4 h-4" />
             <input
               type="text"
               placeholder="Ürün adı, açıklama veya kategori ara..."
@@ -501,8 +533,16 @@ export default function AdminProductsPage() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     {getCategoryBadge(product.category)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-gray-100">
-                    {formatPrice(product.price)} ₺
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                      {formatPrice(product.price)} ₺
+                      {product.originalPrice && product.originalPrice > product.price && (
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          <span className="line-through">{formatPrice(product.originalPrice)} ₺</span>
+                          <span className="ml-1 text-green-600">%{Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}</span>
+                        </div>
+                      )}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {getStockBadge(product.stock || 0, product.category)}
@@ -616,7 +656,7 @@ export default function AdminProductsPage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Fiyat (₺)
@@ -628,6 +668,21 @@ export default function AdminProductsPage() {
                       value={productData.price}
                       onChange={(e) => setProductData({ ...productData, price: parseFloat(e.target.value) || 0 })}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      İndirim Öncesi Fiyat (₺)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={productData.originalPrice}
+                      onChange={(e) => setProductData({ ...productData, originalPrice: parseFloat(e.target.value) || 0 })}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                      placeholder="İndirim yoksa boş bırakın"
                     />
                   </div>
 
@@ -661,7 +716,7 @@ export default function AdminProductsPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Resim URL'si
+                    Ana Resim URL'si
                   </label>
                   <input
                     type="url"
@@ -670,6 +725,55 @@ export default function AdminProductsPage() {
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     placeholder="https://example.com/image.jpg"
                   />
+                </div>
+
+                {/* Galeri Resimleri */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Galeri Resimleri (Her satıra bir URL)
+                  </label>
+                  <textarea
+                    value={productData.images.join('\n')}
+                    onChange={(e) => setProductData({ 
+                      ...productData, 
+                      images: e.target.value.split('\n').filter(url => url.trim()) 
+                    })}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.jpg&#10;https://example.com/image3.jpg"
+                  />
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Her satıra bir resim URL'si yazın. Boş satırlar otomatik olarak kaldırılır.
+                  </p>
+                </div>
+
+                {/* Ürün Özellikleri */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Ürün Özellikleri (JSON formatında)
+                  </label>
+                  <textarea
+                    value={JSON.stringify(productData.specifications, null, 2)}
+                    onChange={(e) => {
+                      try {
+                        const specs = JSON.parse(e.target.value);
+                        setProductData({ ...productData, specifications: specs });
+                      } catch (error) {
+                        // JSON geçersizse değişiklik yapma
+                      }
+                    }}
+                    rows={6}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 font-mono text-sm"
+                    placeholder={`{
+  "Marka": "Apple",
+  "Model": "iPhone 13",
+  "Renk": "Siyah",
+  "Depolama": "128GB"
+}`}
+                  />
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Ürün özelliklerini JSON formatında girin. Örnek: {'{"Marka": "Apple", "Model": "iPhone 13"}'}
+                  </p>
                 </div>
 
                 <div className="flex justify-end space-x-3 pt-4">

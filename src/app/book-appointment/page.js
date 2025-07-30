@@ -86,6 +86,13 @@ function BookAppointmentForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Form validasyonu
+    if (!formData.serviceType || !formData.date || !formData.time || !formData.phone || !formData.address) {
+      setError('Lütfen tüm gerekli alanları doldurun.');
+      return;
+    }
+
     setError('');
     setSuccess('');
     setLoading(true);
@@ -297,7 +304,7 @@ function BookAppointmentForm() {
               <button
                 type="submit"
                 disabled={loading}
-                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-150 ease-out shadow-lg hover:shadow-xl transform hover:scale-105"
+                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150 ease-in-out shadow-lg hover:shadow-xl will-change-transform"
               >
                 {loading ? (
                   <div className="flex items-center">

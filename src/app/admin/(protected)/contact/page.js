@@ -201,7 +201,7 @@ export default function AdminContactMessagesPage() {
         <div className="flex items-center space-x-4">
           <div className="flex items-center">
             <MessageSquare className="w-6 h-6 text-blue-600 dark:text-blue-400 mr-2" />
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-900">
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
               İletişim Mesajları
             </h1>
           </div>
@@ -216,7 +216,7 @@ export default function AdminContactMessagesPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           {/* Arama */}
           <div className="relative lg:col-span-2">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-4 h-4" />
             <input
               type="text"
               placeholder="Gönderen, email, konu veya mesaj ara..."

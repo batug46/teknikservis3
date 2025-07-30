@@ -125,21 +125,21 @@ export default function CartPage() {
 
     const alertConfig = {
       warning: { 
-        bg: 'bg-yellow-50', 
-        border: 'border-yellow-200', 
-        text: 'text-yellow-800', 
+        bg: 'bg-yellow-50 dark:bg-yellow-900/20', 
+        border: 'border-yellow-200 dark:border-yellow-800', 
+        text: 'text-yellow-800 dark:text-yellow-200', 
         icon: AlertTriangle 
       },
       danger: { 
-        bg: 'bg-red-50', 
-        border: 'border-red-200', 
-        text: 'text-red-800', 
+        bg: 'bg-red-50 dark:bg-red-900/20', 
+        border: 'border-red-200 dark:border-red-800', 
+        text: 'text-red-800 dark:text-red-200', 
         icon: AlertTriangle 
       },
       success: { 
-        bg: 'bg-green-50', 
-        border: 'border-green-200', 
-        text: 'text-green-800', 
+        bg: 'bg-green-50 dark:bg-green-900/20', 
+        border: 'border-green-200 dark:border-green-800', 
+        text: 'text-green-800 dark:text-green-200', 
         icon: CheckCircle 
       }
     };
@@ -164,10 +164,10 @@ export default function CartPage() {
   if (cart.length === 0) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-16">
-        <div className="text-center bg-gray-50 rounded-lg p-12">
-          <ShoppingBag className="mx-auto h-24 w-24 text-gray-400 mb-6" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Sepetiniz Boş</h2>
-          <p className="text-gray-600 mb-8">
+        <div className="text-center bg-gray-50 dark:bg-gray-800 rounded-lg p-12">
+          <ShoppingBag className="mx-auto h-24 w-24 text-gray-400 dark:text-gray-500 mb-6" />
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Sepetiniz Boş</h2>
+          <p className="text-gray-600 dark:text-gray-300 mb-8">
             Henüz sepetinizde ürün bulunmamaktadır. Alışverişe başlamak için ürünlerimize göz atın.
           </p>
           <Link 
@@ -188,14 +188,14 @@ export default function CartPage() {
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center">
           <ShoppingCart className="w-8 h-8 mr-3 text-blue-600" />
-          <h1 className="text-3xl font-bold text-gray-800">Sepetim</h1>
-          <span className="ml-3 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Sepetim</h1>
+          <span className="ml-3 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-3 py-1 rounded-full text-sm font-medium">
             {cart.length} ürün
           </span>
         </div>
         <Link 
           href="/products"
-          className="flex items-center text-blue-600 hover:text-blue-800 transition-colors"
+          className="flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Alışverişe Devam Et
@@ -207,17 +207,17 @@ export default function CartPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Cart Items */}
         <div className="lg:col-span-2">
-          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-            <div className="p-6 border-b">
-              <h2 className="text-xl font-semibold text-gray-800">Sepet Ürünleri</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Sepet Ürünleri</h2>
             </div>
             
-            <div className="divide-y divide-gray-200">
+            <div className="divide-y divide-gray-200 dark:divide-gray-700">
               {cart.map((item) => (
-                <div key={item.id} className="p-6 hover:bg-gray-50 transition-colors">
+                <div key={item.id} className="p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                   <div className="flex items-center space-x-4">
                     {/* Product Image Placeholder */}
-                    <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <div className="w-20 h-20 bg-gray-100 dark:bg-gray-600 rounded-lg flex items-center justify-center">
                       {item.imageUrl ? (
                         <img 
                           src={item.imageUrl} 
@@ -225,16 +225,16 @@ export default function CartPage() {
                           className="w-full h-full object-cover rounded-lg"
                         />
                       ) : (
-                        <Package className="w-8 h-8 text-gray-400" />
+                        <Package className="w-8 h-8 text-gray-400 dark:text-gray-500" />
                       )}
                     </div>
 
                     {/* Product Info */}
                     <div className="flex-1">
-                      <h3 className="text-lg font-medium text-gray-900">{item.name}</h3>
-                      <p className="text-gray-600">{formatPrice(item.price)} ₺</p>
+                      <h3 className="text-lg font-medium text-gray-900 dark:text-white">{item.name}</h3>
+                      <p className="text-gray-600 dark:text-gray-300">{formatPrice(item.price)} ₺</p>
                       {stockInfo[item.id] !== undefined && (
-                        <p className="text-sm text-gray-500 flex items-center mt-1">
+                        <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center mt-1">
                           <CheckCircle className="w-4 h-4 mr-1 text-green-500" />
                           Stokta: {stockInfo[item.id]} adet
                         </p>
@@ -244,34 +244,34 @@ export default function CartPage() {
                     {/* Quantity Controls */}
                     <div className="flex items-center space-x-3">
                       <button
-                        className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
+                        className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 flex items-center justify-center transition-colors"
                         onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
                         disabled={item.quantity <= 1}
                       >
-                        <Minus className="w-4 h-4" />
+                        <Minus className="w-4 h-4 text-gray-600 dark:text-gray-300" />
                       </button>
                       
-                      <span className="w-12 text-center font-medium">{item.quantity}</span>
+                      <span className="w-12 text-center font-medium text-gray-900 dark:text-white">{item.quantity}</span>
                       
                       <button
-                        className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500 flex items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
                         disabled={stockInfo[item.id] !== undefined && item.quantity >= stockInfo[item.id]}
                       >
-                        <Plus className="w-4 h-4" />
+                        <Plus className="w-4 h-4 text-gray-600 dark:text-gray-300" />
                       </button>
                     </div>
 
                     {/* Item Total */}
                     <div className="text-right">
-                      <div className="text-lg font-semibold text-gray-900">
+                      <div className="text-lg font-semibold text-gray-900 dark:text-white">
                         {formatPrice(item.price * item.quantity)} ₺
                       </div>
                     </div>
 
                     {/* Remove Button */}
                     <button
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                       onClick={() => removeFromCart(item.id)}
                       title="Sepetten Kaldır"
                     >
@@ -286,20 +286,20 @@ export default function CartPage() {
 
         {/* Order Summary */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-lg shadow-lg p-6 sticky top-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-6">Sipariş Özeti</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 sticky top-6">
+            <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-6">Sipariş Özeti</h2>
             
             <div className="space-y-4 mb-6">
-              <div className="flex justify-between text-gray-600">
+              <div className="flex justify-between text-gray-600 dark:text-gray-300">
                 <span>Ara Toplam ({cart.length} ürün)</span>
                 <span>{formatPrice(totalPrice)} ₺</span>
               </div>
-              <div className="flex justify-between text-gray-600">
+              <div className="flex justify-between text-gray-600 dark:text-gray-300">
                 <span>Kargo</span>
-                <span className="text-green-600 font-medium">Ücretsiz</span>
+                <span className="text-green-600 dark:text-green-400 font-medium">Ücretsiz</span>
               </div>
-              <hr className="border-gray-200" />
-              <div className="flex justify-between text-lg font-semibold text-gray-900">
+              <hr className="border-gray-200 dark:border-gray-700" />
+              <div className="flex justify-between text-lg font-semibold text-gray-900 dark:text-white">
                 <span>Toplam</span>
                 <span>{formatPrice(totalPrice)} ₺</span>
               </div>
@@ -324,7 +324,7 @@ export default function CartPage() {
             </button>
 
             {status !== 'authenticated' && (
-              <p className="text-sm text-gray-500 text-center mt-4">
+              <p className="text-sm text-gray-500 dark:text-gray-400 text-center mt-4">
                 Alışverişi tamamlamak için giriş yapmanız gerekiyor.
               </p>
             )}

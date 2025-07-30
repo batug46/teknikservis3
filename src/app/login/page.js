@@ -41,13 +41,13 @@ export default function LoginPage() {
   return (
     <div className="flex flex-col justify-center items-center flex-grow py-12">
       <div className="w-full max-w-md">
-        <div className="bg-white shadow-lg rounded-2xl p-8 space-y-6">
-            <h2 className="text-center text-3xl font-extrabold text-gray-900">
+        <div className="bg-white dark:bg-gray-800 shadow-lg rounded-2xl p-8 space-y-6 border border-gray-200 dark:border-gray-700">
+            <h2 className="text-center text-3xl font-extrabold text-gray-900 dark:text-white">
               Hesabınıza giriş yapın
             </h2>
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
                 E-posta Adresi
               </label>
               <div className="mt-1">
@@ -57,7 +57,7 @@ export default function LoginPage() {
                   type="email"
                   autoComplete="email"
                   required
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   placeholder="ornek@mail.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -67,7 +67,7 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-200">
                 Şifre
               </label>
               <div className="mt-1">
@@ -77,7 +77,7 @@ export default function LoginPage() {
                   type="password"
                   autoComplete="current-password"
                   required
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -87,7 +87,7 @@ export default function LoginPage() {
             </div>
             
             {error && (
-              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+              <div className="bg-red-100 dark:bg-red-900/20 border border-red-400 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded relative" role="alert">
                 <span className="block sm:inline">{error}</span>
               </div>
             )}
@@ -113,7 +113,7 @@ export default function LoginPage() {
             </div>
           </form>
           <div className="text-sm text-center">
-            <Link href="/register" className="font-medium text-indigo-600 hover:text-indigo-500 transition-all duration-150 ease-out will-change-transform hover:scale-105">
+            <Link href="/register" className="font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 transition-all duration-150 ease-out will-change-transform hover:scale-105">
               Hesabınız yok mu? Hemen kaydolun
             </Link>
           </div>

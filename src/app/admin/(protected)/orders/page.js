@@ -254,7 +254,7 @@ export default function AdminOrdersPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-900 flex items-center">
+        <h1 className="text-3xl font-bold text-gray-800 dark:text-white flex items-center">
           <Package className="w-8 h-8 mr-3 text-blue-600 dark:text-blue-400" />
           Sipariş Yönetimi
         </h1>
@@ -268,7 +268,7 @@ export default function AdminOrdersPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           {/* Arama */}
           <div className="relative lg:col-span-2">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-4 h-4" />
             <input
               type="text"
               placeholder="Sipariş ID, müşteri adı veya email ara..."

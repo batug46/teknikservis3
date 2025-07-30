@@ -18,11 +18,10 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: 'Ürün bulunamadı.' }, { status: 404 });
     }
 
-    // Ürünle ilgili puanları getir
-    const ratings = await prisma.orderItem.findMany({
+    // Ürünle ilgili puanları getir (yeni ProductReview modelini kullan)
+    const ratings = await prisma.productReview.findMany({
       where: {
         productId: productId,
-        rating: { not: null },
       },
       select: {
         rating: true,

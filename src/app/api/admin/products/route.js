@@ -18,7 +18,7 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const data = await request.json();
-    const { name, description, price, imageUrl, category, stock, isActive } = data;
+    const { name, description, price, originalPrice, imageUrl, category, stock, isActive, specifications, images, soldCount, viewCount } = data;
 
     if (!name || price === undefined || !category) {
       return NextResponse.json({ error: 'İsim, fiyat ve kategori zorunludur.' }, { status: 400 });
@@ -29,10 +29,15 @@ export async function POST(request) {
         name,
         description: description || '',
         price: parseFloat(price),
+        originalPrice: originalPrice ? parseFloat(originalPrice) : null,
         imageUrl: imageUrl || '',
         category,
         stock: parseInt(stock) || 0,
         isActive: isActive !== undefined ? isActive : true,
+        specifications: specifications || {},
+        images: images || [],
+        soldCount: soldCount ? parseInt(soldCount) : 0,
+        viewCount: viewCount ? parseInt(viewCount) : 0,
       },
     });
     return NextResponse.json(product, { status: 201 });

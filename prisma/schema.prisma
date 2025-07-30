@@ -35,6 +35,9 @@ model User {
   orders           Order[]
   receivedMessages PrivateMessage[] @relation("ReceivedMessages")
   sentMessages     PrivateMessage[] @relation("SentMessages")
+  likedProducts    LikedProduct[]
+  reviews          ProductReview[]
+  returns          Return[]
 }
 
 model Product {
@@ -42,13 +45,20 @@ model Product {
   name        String      @unique
   description String?
   price       Decimal     @db.Decimal(10, 2)
+  originalPrice Decimal?  @db.Decimal(10, 2) // İndirim öncesi fiyat
   imageUrl    String?
   category    String      @default("other")
   stock       Int         @default(0)
   isActive    Boolean     @default(true)
+  specifications Json?    // Ürün özellikleri
+  images      String[]    // Ürün galerisi
+  soldCount   Int         @default(0) // Satılan adet sayısı
+  viewCount   Int         @default(0) // Görüntülenme sayısı
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   orderItems  OrderItem[]
+  likedBy     LikedProduct[]
+  reviews     ProductReview[]
 }
 
 model OrderItem {
@@ -62,6 +72,7 @@ model OrderItem {
   updatedAt DateTime @updatedAt
   order     Order    @relation(fields: [orderId], references: [id])
   product   Product  @relation(fields: [productId], references: [id])
+  returns   Return[]
 }
 
 model Message {
@@ -160,9 +171,88 @@ model PrivateMessage {
   @@index([recipientId])
 }
 
+model LikedProduct {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  productId Int
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@index([productId])
+}
+
+model ProductReview {
+  id        Int      @id @default(autoincrement())
+  productId Int
+  userId    Int
+  rating    Int      // 1-5 arası
+  title     String?
+  comment   String?
+  images    String[] // Yorum fotoğrafları
+  isVerified Boolean @default(false) // Satın alma doğrulaması
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  product   Product  @relation(fields: [productId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, productId]) // Bir kullanıcı bir ürüne sadece bir yorum yapabilir
+  @@index([productId])
+  @@index([userId])
+}
+
+model Return {
+  id          Int           @id @default(autoincrement())
+  orderItemId Int
+  userId      Int
+  reason      String        // İade nedeni
+  description String?       // Detaylı açıklama
+  status      ReturnStatus  @default(PENDING)
+  returnType  ReturnType    @default(REFUND) // İade veya değişim
+  adminNotes  String?       // Admin notları
+  
+  // Kargo bilgileri
+  courierCompany String?    // Kargo firması (MNG, Yurtiçi, Aras vb.)
+  trackingNumber String?    // Kargo takip numarası
+  shippingAddress String?   // Gönderim adresi
+  shippingCost Decimal?     @db.Decimal(10, 2) // Kargo ücreti
+  shippingInstructions String? // Kargo talimatları
+  shippedAt DateTime?       // Kargolandığı tarih
+  receivedAt DateTime?      // Mağazada alındığı tarih
+  
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  orderItem   OrderItem     @relation(fields: [orderItemId], references: [id])
+  user        User          @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([orderItemId])
+  @@index([status])
+}
+
 enum AppointmentStatus {
   PENDING
   CONFIRMED
   IN_PROGRESS
   CANCELLED
+}
+
+enum ReturnStatus {
+  PENDING           // Beklemede
+  APPROVED          // Onaylandı
+  SHIPPING_REQUIRED // Kargo bekleniyor
+  SHIPPED           // Kargolandı
+  RECEIVED          // Mağazada alındı
+  REJECTED          // Reddedildi
+  PROCESSING        // İşleniyor
+  COMPLETED         // Tamamlandı
+  CANCELLED         // İptal edildi
+}
+
+enum ReturnType {
+  REFUND       // Para iadesi
+  EXCHANGE     // Ürün değişimi
+  CREDIT       // Kredi
 }
