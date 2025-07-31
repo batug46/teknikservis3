@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '../../../../lib/prisma';
 import bcrypt from 'bcryptjs';
 import { SignJWT } from 'jose';
+import { sanitizeInput, validateEmail } from '../../../../lib/security';
 
 const JWT_SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET || 'your-super-secret-key-that-is-long-enough'
@@ -10,16 +11,27 @@ const JWT_SECRET = new TextEncoder().encode(
 export async function POST(request) {
   try {
     const { email, password } = await request.json();
+    
+    // Input validation ve sanitization
     if (!email || !password) {
       return NextResponse.json({ error: 'E-posta ve şifre zorunludur.' }, { status: 400 });
     }
 
-    const user = await prisma.user.findUnique({ where: { email } });
+    // Email validation
+    if (!validateEmail(email)) {
+      return NextResponse.json({ error: 'Geçersiz email formatı.' }, { status: 400 });
+    }
+
+    // Input sanitization
+    const sanitizedEmail = sanitizeInput(email);
+    const sanitizedPassword = sanitizeInput(password);
+
+    const user = await prisma.user.findUnique({ where: { email: sanitizedEmail } });
     if (!user) {
       return NextResponse.json({ error: 'Geçersiz e-posta veya şifre.' }, { status: 401 });
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await bcrypt.compare(sanitizedPassword, user.password);
     if (!isPasswordValid) {
       return NextResponse.json({ error: 'Geçersiz e-posta veya şifre.' }, { status: 401 });
     }

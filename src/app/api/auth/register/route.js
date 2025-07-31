@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
+import { sanitizeInput, validateEmail, validatePasswordStrength, preventSQLInjection } from '../../../../lib/security';
 
 const prisma = new PrismaClient();
 
@@ -17,9 +18,45 @@ export async function POST(request) {
       );
     }
 
+    // Input sanitization
+    const sanitizedEmail = sanitizeInput(email);
+    const sanitizedName = sanitizeInput(name);
+    const sanitizedAdSoyad = sanitizeInput(adSoyad);
+    const sanitizedPhone = phone ? sanitizeInput(phone) : null;
+
+    // Email validation
+    if (!validateEmail(sanitizedEmail)) {
+      return NextResponse.json(
+        { error: 'Geçersiz email formatı' },
+        { status: 400 }
+      );
+    }
+
+    // Password strength validation
+    const passwordValidation = validatePasswordStrength(password);
+    if (!passwordValidation.isValid) {
+      return NextResponse.json(
+        { error: 'Şifre güvenlik gereksinimlerini karşılamıyor', details: passwordValidation.errors },
+        { status: 400 }
+      );
+    }
+
+    // SQL Injection prevention
+    try {
+      preventSQLInjection(sanitizedEmail);
+      preventSQLInjection(sanitizedName);
+      preventSQLInjection(sanitizedAdSoyad);
+      if (sanitizedPhone) preventSQLInjection(sanitizedPhone);
+    } catch (error) {
+      return NextResponse.json(
+        { error: 'Geçersiz karakterler tespit edildi' },
+        { status: 400 }
+      );
+    }
+
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
-      where: { email }
+      where: { email: sanitizedEmail }
     });
 
     if (existingUser) {
@@ -30,16 +67,16 @@ export async function POST(request) {
     }
 
     // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 12); // Increased salt rounds
 
     // Create user
     const user = await prisma.user.create({
       data: {
-        email,
+        email: sanitizedEmail,
         password: hashedPassword,
-        name,
-        adSoyad,
-        phone,
+        name: sanitizedName,
+        adSoyad: sanitizedAdSoyad,
+        phone: sanitizedPhone,
         role: 'user', // Default role
       },
     });
