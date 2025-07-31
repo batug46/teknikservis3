@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '../../../lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../../lib/auth';
+import { sendOrderConfirmationEmail } from '../../../lib/email';
 
 export async function POST(request) {
   try {
@@ -82,6 +83,20 @@ export async function POST(request) {
 
       return newOrder;
     });
+
+    // Email gönderimi (opsiyonel - hata durumunda sipariş yine de oluşturulur)
+    try {
+      if (process.env.EMAIL_SERVER_USER && process.env.EMAIL_SERVER_PASSWORD) {
+        await sendOrderConfirmationEmail(currentUser.email, {
+          id: order.id,
+          total: totalPrice,
+          createdAt: order.createdAt
+        });
+      }
+    } catch (emailError) {
+      console.error('Email gönderme hatası:', emailError);
+      // Email hatası siparişi etkilemez
+    }
 
     return NextResponse.json(order, { status: 201 });
   } catch (error) {
