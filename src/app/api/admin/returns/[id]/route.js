@@ -72,6 +72,42 @@ export async function PATCH(request, { params }) {
       }
     });
 
+    // Eğer iade durumu "RECEIVED" ise, siparişteki tüm ürünlerin iade durumunu kontrol et
+    if (status === 'RECEIVED') {
+      const orderId = updatedReturn.orderItem.orderId;
+      
+      // Bu siparişteki tüm ürünleri al
+      const orderItems = await prisma.orderItem.findMany({
+        where: { orderId: orderId },
+        include: {
+          returns: {
+            where: { status: 'RECEIVED' }
+          }
+        }
+      });
+
+      // Siparişteki toplam ürün sayısı
+      const totalItems = orderItems.length;
+      
+      // İade edilmiş ürün sayısı
+      const returnedItems = orderItems.filter(item => 
+        item.returns.length > 0 || item.status === 'CANCELLED'
+      ).length;
+
+      // Eğer tüm ürünler iade edildiyse siparişi iptal et
+      if (returnedItems === totalItems && totalItems > 0) {
+        await prisma.order.update({
+          where: { id: orderId },
+          data: {
+            status: 'CANCELLED',
+            cancelReason: 'Tüm ürünler iade edildi',
+            cancelDescription: 'Kullanıcı tarafından tüm ürünler iade edildi',
+            cancelledAt: new Date()
+          }
+        });
+      }
+    }
+
     return NextResponse.json({
       message: 'İade talebi durumu güncellendi',
       return: updatedReturn
@@ -90,5 +126,32 @@ export async function PATCH(request, { params }) {
       details: error.message,
       code: error.code
     }, { status: 500 });
+  }
+}
+
+export async function DELETE(request, { params }) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return NextResponse.json({ error: 'Oturum açmanız gerekiyor' }, { status: 401 });
+    }
+
+    // Admin kontrolü
+    if (session.user?.role !== 'admin') {
+      return NextResponse.json({ error: 'Yetkisiz erişim' }, { status: 403 });
+    }
+
+    const { id } = params;
+    const returnId = parseInt(id);
+
+    // İade talebini sil
+    await prisma.return.delete({
+      where: { id: returnId }
+    });
+
+    return NextResponse.json({ message: 'İade talebi başarıyla silindi' });
+  } catch (error) {
+    console.error('İade talebi silme hatası:', error);
+    return NextResponse.json({ error: 'İade talebi silinirken hata oluştu' }, { status: 500 });
   }
 } 

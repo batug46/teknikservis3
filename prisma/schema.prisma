@@ -10,10 +10,13 @@ datasource db {
 model Order {
   id        Int         @id @default(autoincrement())
   userId    Int
-  status    String      @default("pending")
+  status    OrderStatus @default(PENDING)
   total     Decimal     @db.Decimal(10, 2)
   phone     String?
   address   String?
+  cancelReason String?  // İptal nedeni
+  cancelDescription String? // İptal açıklaması
+  cancelledAt DateTime? // İptal tarihi
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
   user      User        @relation(fields: [userId], references: [id])
@@ -68,6 +71,10 @@ model OrderItem {
   quantity  Int
   price     Decimal  @db.Decimal(10, 2)
   rating    Int?
+  status    String   @default("ACTIVE") // ACTIVE, CANCELLED
+  cancelReason String? // İptal nedeni
+  cancelDescription String? // İptal açıklaması
+  cancelledAt DateTime? // İptal tarihi
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   order     Order    @relation(fields: [orderId], references: [id])
@@ -255,4 +262,15 @@ enum ReturnType {
   REFUND       // Para iadesi
   EXCHANGE     // Ürün değişimi
   CREDIT       // Kredi
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  COMPLETED
+  CANCELLED
+  REFUNDED
 }

@@ -81,6 +81,40 @@ export async function POST(request) {
       }
     });
 
+    // Siparişteki tüm ürünlerin iade durumunu kontrol et
+    const orderId = returnRequest.orderItem.orderId;
+    
+    // Bu siparişteki tüm ürünleri al
+    const orderItems = await prisma.orderItem.findMany({
+      where: { orderId: orderId },
+      include: {
+        returns: {
+          where: { status: { not: 'REJECTED' } } // Reddedilmemiş iade talepleri
+        }
+      }
+    });
+
+    // Siparişteki toplam ürün sayısı
+    const totalItems = orderItems.length;
+    
+    // İade talebi olan ürün sayısı (iptal edilmiş + iade talebi olan)
+    const itemsWithReturn = orderItems.filter(item => 
+      item.returns.length > 0 || item.status === 'CANCELLED'
+    ).length;
+
+    // Eğer tüm ürünler için iade talebi varsa siparişi iptal et
+    if (itemsWithReturn === totalItems && totalItems > 0) {
+      await prisma.order.update({
+        where: { id: orderId },
+        data: {
+          status: 'CANCELLED',
+          cancelReason: 'Tüm ürünler için iade talebi oluşturuldu',
+          cancelDescription: 'Kullanıcı tarafından tüm ürünler için iade talebi oluşturuldu',
+          cancelledAt: new Date()
+        }
+      });
+    }
+
     return NextResponse.json({
       message: 'İade talebiniz başarıyla oluşturuldu',
       return: returnRequest

@@ -49,6 +49,10 @@ export async function GET() {
         quantity: item.quantity,
         price: item.product.price,
         rating: item.rating,
+        status: item.status,
+        cancelReason: item.cancelReason,
+        cancelDescription: item.cancelDescription,
+        cancelledAt: item.cancelledAt,
         product: {
           id: item.product.id,
           name: item.product.name,

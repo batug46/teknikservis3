@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   RefreshCw, Search, SortAsc, SortDesc, Eye, CheckCircle, XCircle, 
-  Clock, AlertCircle, Package, User, Calendar, Filter, MoreVertical
+  Clock, AlertCircle, Package, User, Calendar, Filter, MoreVertical, Trash2
 } from 'lucide-react';
 
 export default function AdminReturnsPage() {
@@ -173,6 +173,28 @@ export default function AdminReturnsPage() {
     }
   };
 
+  const handleDeleteReturn = async (returnId) => {
+    if (!confirm('Bu iade talebini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/returns/${returnId}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        showFeedback('success', 'İade talebi başarıyla silindi');
+        fetchReturns();
+      } else {
+        showFeedback('error', 'İade talebi silinirken hata oluştu');
+      }
+    } catch (error) {
+      console.error('Delete return error:', error);
+      showFeedback('error', 'Bağlantı hatası');
+    }
+  };
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('tr-TR', {
       day: '2-digit',
@@ -283,6 +305,14 @@ export default function AdminReturnsPage() {
         });
         break;
     }
+
+    // Silme butonu her durumda mevcut
+    actions.push({
+      label: 'İade Talebini Sil',
+      icon: Trash2,
+      onClick: () => handleDeleteReturn(returnItem.id),
+      className: 'text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30'
+    });
     
     return actions;
   };

@@ -28,6 +28,10 @@ export async function GET(request) {
             quantity: true,
             price: true,
             rating: true,
+            status: true,
+            cancelReason: true,
+            cancelDescription: true,
+            cancelledAt: true,
             product: { 
               select: { 
                 name: true,

@@ -325,6 +325,84 @@ export default function ProfilePage() {
     }
   };
 
+  // Sipariş iptal state'leri
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [selectedCancelOrder, setSelectedCancelOrder] = useState(null);
+  const [selectedCancelItem, setSelectedCancelItem] = useState(null);
+  const [cancelReason, setCancelReason] = useState('');
+  const [cancelDescription, setCancelDescription] = useState('');
+
+  const handleCancelClick = (order, item = null) => {
+    setSelectedCancelOrder(order);
+    setSelectedCancelItem(item);
+    setShowCancelModal(true);
+  };
+
+  const handleCloseCancelModal = () => {
+    setShowCancelModal(false);
+    setSelectedCancelOrder(null);
+    setSelectedCancelItem(null);
+    setCancelReason('');
+    setCancelDescription('');
+  };
+
+  const handleCancelOrder = async () => {
+    if (!cancelReason) {
+      setMessage({ type: 'danger', text: 'Lütfen iptal nedenini seçin' });
+      return;
+    }
+
+    try {
+      let response;
+      if (selectedCancelItem) {
+        // Ürün bazlı iptal
+        response = await fetch(`/api/orders/${selectedCancelOrder.id}/items/${selectedCancelItem.id}/cancel`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            reason: cancelReason,
+            description: cancelDescription
+          })
+        });
+      } else {
+        // Sipariş bazlı iptal
+        response = await fetch(`/api/orders/${selectedCancelOrder.id}/cancel`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            reason: cancelReason,
+            description: cancelDescription
+          })
+        });
+      }
+
+      if (response.ok) {
+        const result = await response.json();
+        handleCloseCancelModal();
+        fetchOrders();
+        if (selectedCancelItem) {
+          setMessage({ type: 'success', text: 'Ürün başarıyla iptal edildi' });
+        } else {
+          setMessage({ type: 'success', text: 'Sipariş başarıyla iptal edildi' });
+        }
+      } else {
+        const error = await response.json();
+        setMessage({ type: 'danger', text: error.error || 'İptal işlemi sırasında hata oluştu' });
+      }
+    } catch (error) {
+      console.error('İptal hatası:', error);
+      setMessage({ type: 'danger', text: 'Bağlantı hatası' });
+    }
+  };
+
+  const canCancelOrder = (order) => {
+    return order.status === 'PENDING' || order.status === 'CONFIRMED';
+  };
+
+  const canCancelItem = (item, orderStatus) => {
+    return item.status !== 'CANCELLED' && (orderStatus === 'PENDING' || orderStatus === 'CONFIRMED');
+  };
+
   // Helper functions
   const formatPrice = (price) => {
     if (!price) return '0.00';
@@ -608,7 +686,18 @@ export default function ProfilePage() {
                         </div>
                         <div className="text-right">
                           <div className="text-xl font-bold text-gray-900 dark:text-white">{formatPrice(order.total)} ₺</div>
-                          {getStatusBadge(order.status, 'order')}
+                          <div className="flex items-center space-x-2">
+                            {getStatusBadge(order.status, 'order')}
+                            {canCancelOrder(order) && (
+                              <button
+                                onClick={() => handleCancelClick(order)}
+                                className="inline-flex items-center px-3 py-1 border border-red-300 dark:border-red-600 rounded-md text-sm font-medium text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
+                              >
+                                <XCircle className="w-4 h-4 mr-1" />
+                                İptal Et
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </div>
 
@@ -624,6 +713,14 @@ export default function ProfilePage() {
                                 <p className="text-gray-500 dark:text-gray-400">
                                   {item.quantity} adet × {formatPrice(item.price)} ₺
                                 </p>
+                                {item.status === 'CANCELLED' && (
+                                  <div className="mt-1">
+                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200">
+                                      <XCircle className="w-3 h-3 mr-1" />
+                                      İptal Edildi
+                                    </span>
+                                  </div>
+                                )}
                               </div>
                             </div>
                             <div className="text-right">
@@ -653,6 +750,14 @@ export default function ProfilePage() {
                                   <div className="text-sm text-gray-500 dark:text-gray-400">
                                     {getStatusBadge(getReturnStatusForItem(item.id), 'return')}
                                   </div>
+                                )}
+                                {canCancelItem(item, order.status) && (
+                                  <button
+                                    onClick={() => handleCancelClick(order, item)}
+                                    className="text-orange-600 hover:text-orange-800 dark:text-orange-400 dark:hover:text-orange-300 text-sm font-medium text-left"
+                                  >
+                                    Ürünü İptal Et
+                                  </button>
                                 )}
                               </div>
                             </div>
@@ -1277,6 +1382,126 @@ export default function ProfilePage() {
                 className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-200"
               >
                 İptal
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sipariş İptal Modal */}
+      {showCancelModal && selectedCancelOrder && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 dark:bg-gray-900 dark:bg-opacity-75 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-11/12 max-w-2xl shadow-lg rounded-md bg-white dark:bg-gray-800">
+            <div className="mt-3">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                  {selectedCancelItem ? 'Ürün İptal Et' : 'Sipariş İptal Et'}
+                </h3>
+                <button
+                  onClick={handleCloseCancelModal}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              
+              <div className="space-y-6">
+                {/* Sipariş Bilgileri */}
+                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                  <h4 className="font-medium text-gray-900 dark:text-white mb-2">
+                    {selectedCancelItem ? 'Ürün Bilgileri' : 'Sipariş Bilgileri'}
+                  </h4>
+                  <div className="space-y-2">
+                    <p><span className="font-medium">Sipariş No:</span> #{selectedCancelOrder.id}</p>
+                    {selectedCancelItem ? (
+                      <>
+                        <p><span className="font-medium">Ürün:</span> {selectedCancelItem.product.name}</p>
+                        <p><span className="font-medium">Adet:</span> {selectedCancelItem.quantity}</p>
+                        <p><span className="font-medium">Birim Fiyat:</span> {formatPrice(selectedCancelItem.price)} ₺</p>
+                        <p><span className="font-medium">Toplam:</span> {formatPrice(selectedCancelItem.quantity * selectedCancelItem.price)} ₺</p>
+                      </>
+                    ) : (
+                      <>
+                        <p><span className="font-medium">Toplam Tutar:</span> {formatPrice(selectedCancelOrder.total)} ₺</p>
+                        <p><span className="font-medium">Durum:</span> {getStatusBadge(selectedCancelOrder.status, 'order')}</p>
+                      </>
+                    )}
+                    <p><span className="font-medium">Tarih:</span> {formatDate(selectedCancelOrder.createdAt)}</p>
+                  </div>
+                </div>
+
+                {/* İptal Nedeni */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    İptal Nedeni *
+                  </label>
+                  <select
+                    value={cancelReason}
+                    onChange={(e) => setCancelReason(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                    required
+                  >
+                    <option value="">İptal nedenini seçin</option>
+                    <option value="Yanlış ürün seçtim">Yanlış ürün seçtim</option>
+                    <option value="Fiyat değişti">Fiyat değişti</option>
+                    <option value="Başka yerden aldım">Başka yerden aldım</option>
+                    <option value="İhtiyacım kalmadı">İhtiyacım kalmadı</option>
+                    <option value="Teslimat süresi uzun">Teslimat süresi uzun</option>
+                    <option value="Diğer">Diğer</option>
+                  </select>
+                </div>
+
+                {/* Açıklama */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Açıklama
+                  </label>
+                  <textarea
+                    value={cancelDescription}
+                    onChange={(e) => setCancelDescription(e.target.value)}
+                    rows={4}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                    placeholder="İptal talebiniz hakkında detaylı bilgi verebilirsiniz..."
+                  />
+                </div>
+
+                {/* Uyarı */}
+                <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md p-4">
+                  <div className="flex">
+                    <AlertCircle className="h-5 w-5 text-yellow-400 dark:text-yellow-300" />
+                    <div className="ml-3">
+                      <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                        Dikkat
+                      </h3>
+                      <div className="mt-2 text-sm text-yellow-700 dark:text-yellow-300">
+                        <p>
+                          {selectedCancelItem 
+                            ? 'Ürün iptal işlemi geri alınamaz. İptal etmek istediğinizden emin misiniz?' 
+                            : 'Sipariş iptal işlemi geri alınamaz. İptal etmek istediğinizden emin misiniz?'
+                          }
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse mt-6">
+              <button
+                type="button"
+                onClick={handleCancelOrder}
+                disabled={!cancelReason}
+                className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-200"
+              >
+                {selectedCancelItem ? 'Ürünü İptal Et' : 'Siparişi İptal Et'}
+              </button>
+              <button
+                type="button"
+                onClick={handleCloseCancelModal}
+                className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-700 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:w-auto sm:text-sm transition-colors duration-200"
+              >
+                Vazgeç
               </button>
             </div>
           </div>

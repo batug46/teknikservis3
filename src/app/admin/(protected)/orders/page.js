@@ -112,6 +112,7 @@ export default function AdminOrdersPage() {
   useEffect(() => { fetchOrders(); }, [fetchOrders]);
 
   const handleStatusChange = async (orderId, newStatus) => {
+    console.log('Status change triggered:', { orderId, newStatus });
     setUpdating(true);
     try {
       const res = await fetch(`/api/admin/orders/${orderId}`, {
@@ -120,14 +121,18 @@ export default function AdminOrdersPage() {
         body: JSON.stringify({ status: newStatus })
       });
 
+      console.log('Response status:', res.status);
+      
       if (res.ok) {
         const updatedOrder = await res.json();
+        console.log('Updated order:', updatedOrder);
         setAllOrders(allOrders.map(order => 
           order.id === orderId ? updatedOrder : order
         ));
         setSelectedOrder(updatedOrder);
       } else {
-        console.error('Sipariş güncellenemedi');
+        const errorData = await res.json();
+        console.error('Sipariş güncellenemedi:', errorData);
       }
     } catch (error) {
       console.error('Sipariş güncellenirken hata:', error);
@@ -461,7 +466,7 @@ export default function AdminOrdersPage() {
                   <div className="space-x-2 mb-4">
                     <button
                       className={`px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
-                        (selectedOrder.status === 'pending' || selectedOrder.status === 'PENDING')
+                        selectedOrder.status === 'PENDING'
                           ? 'bg-yellow-600 text-white' 
                           : 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300'
                       }`}
@@ -488,12 +493,17 @@ export default function AdminOrdersPage() {
                         selectedOrder.status === 'PROCESSING'
                           ? 'bg-purple-600 text-white' 
                           : 'bg-purple-100 text-purple-800 hover:bg-purple-200 dark:bg-purple-900/30 dark:text-purple-300'
-                      }`}
-                      onClick={() => handleStatusChange(selectedOrder.id, 'PROCESSING')}
+                      } ${updating ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      onClick={() => {
+                        console.log('Hazırlanıyor button clicked, updating:', updating);
+                        if (!updating) {
+                          handleStatusChange(selectedOrder.id, 'PROCESSING');
+                        }
+                      }}
                       disabled={updating}
                     >
                       <Package className="w-4 h-4 inline mr-1" />
-                      Hazırlanıyor
+                      Hazırlanıyor {updating && '(Güncelleniyor...)'}
                     </button>
                     <button
                       className={`px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
@@ -509,7 +519,7 @@ export default function AdminOrdersPage() {
                     </button>
                     <button
                       className={`px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
-                        (selectedOrder.status === 'completed' || selectedOrder.status === 'DELIVERED')
+                        selectedOrder.status === 'DELIVERED'
                           ? 'bg-green-600 text-white' 
                           : 'bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-300'
                       }`}
@@ -521,7 +531,7 @@ export default function AdminOrdersPage() {
                     </button>
                     <button
                       className={`px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
-                        (selectedOrder.status === 'cancelled' || selectedOrder.status === 'CANCELLED')
+                        selectedOrder.status === 'CANCELLED'
                           ? 'bg-red-600 text-white' 
                           : 'bg-red-100 text-red-800 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300'
                       }`}
@@ -560,8 +570,18 @@ export default function AdminOrdersPage() {
                     </thead>
                     <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                       {(selectedOrder.items || selectedOrder.orderItems || []).map(item => (
-                        <tr key={item.id}>
-                          <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-gray-100">{item.product?.name || 'Ürün'}</td>
+                        <tr key={item.id} className={item.status === 'CANCELLED' ? 'bg-red-50 dark:bg-red-900/20' : ''}>
+                          <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-gray-100">
+                            <div className="flex items-center">
+                              {item.product?.name || 'Ürün'}
+                              {item.status === 'CANCELLED' && (
+                                <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200">
+                                  <XCircle className="w-3 h-3 mr-1" />
+                                  İptal Edildi
+                                </span>
+                              )}
+                            </div>
+                          </td>
                           <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">{formatPrice(item.price)} ₺</td>
                           <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">{item.quantity}</td>
                           <td className="px-4 py-3 text-sm font-semibold text-gray-900 dark:text-gray-100">{formatPrice(item.price * item.quantity)} ₺</td>

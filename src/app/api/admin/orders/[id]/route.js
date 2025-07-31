@@ -5,13 +5,23 @@ import { authOptions } from '../../../../../lib/auth';
 
 export async function PUT(request, { params }) {
   try {
+    console.log('PUT request received for order:', params.id);
+    
     const session = await getServerSession(authOptions);
+    console.log('Session:', session);
+    
     if (!session?.user || session.user.role !== 'admin') {
+      console.log('Unauthorized access attempt');
       return NextResponse.json({ error: 'Yetkisiz erişim.' }, { status: 401 });
     }
 
-    const { status } = await request.json();
+    const body = await request.json();
+    console.log('Request body:', body);
+    
+    const { status } = body;
     const orderId = parseInt(params.id);
+    
+    console.log('Updating order:', { orderId, status });
 
     const updatedOrder = await prisma.order.update({
       where: { id: orderId },
@@ -29,6 +39,10 @@ export async function PUT(request, { params }) {
             quantity: true,
             price: true,
             rating: true,
+            status: true,
+            cancelReason: true,
+            cancelDescription: true,
+            cancelledAt: true,
             product: { 
               select: { 
                 name: true,
@@ -40,10 +54,20 @@ export async function PUT(request, { params }) {
       }
     });
 
+    console.log('Order updated successfully:', updatedOrder);
     return NextResponse.json(updatedOrder);
   } catch (error) {
     console.error('Sipariş güncelleme hatası:', error);
-    return NextResponse.json({ error: 'Sipariş güncellenirken bir hata oluştu.' }, { status: 500 });
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+      code: error.code
+    });
+    return NextResponse.json({ 
+      error: 'Sipariş güncellenirken bir hata oluştu.',
+      details: error.message 
+    }, { status: 500 });
   }
 }
 

@@ -54,7 +54,7 @@ export async function POST(request) {
           total: totalPrice,
           phone: currentUser.phone,
           address: currentUser.address,
-          status: 'pending',
+          status: 'PENDING',
         },
       });
 
