@@ -164,6 +164,14 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+model PasswordReset {
+  id        Int      @id @default(autoincrement())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
 model PrivateMessage {
   id          Int      @id @default(autoincrement())
   senderId    Int
