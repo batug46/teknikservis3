@@ -1,7 +1,7 @@
 import nodemailer from 'nodemailer';
 
 // Email transporter oluştur
-const transporter = nodemailer.createTransporter({
+const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_SERVER_HOST,
   port: process.env.EMAIL_SERVER_PORT,
   secure: false,
