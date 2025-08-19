@@ -19,7 +19,10 @@ export const authOptions = {
       },
       async authorize(credentials) {
         try {
+          console.log('🔐 Auth attempt:', { email: credentials?.email });
+          
           if (!credentials?.email || !credentials?.password) {
+            console.log('❌ Missing credentials');
             return null;
           }
 
@@ -27,16 +30,22 @@ export const authOptions = {
             where: { email: credentials.email }
           });
 
+          console.log('👤 User found:', user ? 'YES' : 'NO');
+
           if (!user) {
+            console.log('❌ User not found');
             return null;
           }
 
           const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
+          console.log('🔑 Password valid:', isPasswordValid ? 'YES' : 'NO');
 
           if (!isPasswordValid) {
+            console.log('❌ Invalid password');
             return null;
           }
 
+          console.log('✅ Auth success:', { id: user.id, email: user.email, role: user.role });
           return {
             id: user.id,
             email: user.email,
@@ -44,7 +53,7 @@ export const authOptions = {
             role: user.role,
           };
         } catch (error) {
-          console.error('Auth error:', error);
+          console.error('💥 Auth error:', error);
           return null;
         }
       }
@@ -88,6 +97,6 @@ export const authOptions = {
   pages: {
     signIn: '/login',
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET || 'your-secret-key-123',
   debug: true,
 };
