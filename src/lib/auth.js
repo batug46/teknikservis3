@@ -1,22 +1,12 @@
-import { jwtVerify } from 'jose';
+import { getServerSession } from 'next-auth/next';
 import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import prisma from './prisma';
 import bcrypt from 'bcryptjs';
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || 'your-super-secret-key-that-is-long-enough'
-);
-
 export async function verifyAuth(request) {
-  const token = request.cookies.get('token')?.value;
-  if (!token) return null;
-  try {
-    const { payload } = await jwtVerify(token, JWT_SECRET);
-    return payload;
-  } catch (err) {
-    return null;
-  }
+  const session = await getServerSession(authOptions);
+  return session?.user || null;
 }
 
 export const authOptions = {
@@ -59,18 +49,7 @@ export const authOptions = {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30 gün
   },
-  cookies: {
-    sessionToken: {
-      name: `next-auth.session-token`,
-      options: {
-        httpOnly: true,
-        sameSite: 'lax',
-        path: '/',
-        secure: process.env.NODE_ENV === 'production',
-        domain: process.env.NODE_ENV === 'production' ? '.tekniverse.xyz' : undefined
-      }
-    }
-  },
+  // Cookie ayarları basitleştirildi
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
@@ -94,5 +73,5 @@ export const authOptions = {
   pages: {
     signIn: '/login',
   },
-  debug: process.env.NODE_ENV === 'development',
+  debug: true,
 };
