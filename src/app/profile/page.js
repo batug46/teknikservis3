@@ -116,7 +116,7 @@ export default function ProfilePage() {
       // Profil bilgilerini getir
       const fetchProfile = async () => {
         try {
-          const response = await fetch('/api/auth/profile');
+          const response = await fetch('/api/profile');
           if (response.ok) {
             const userData = await response.json();
             setUser(userData);

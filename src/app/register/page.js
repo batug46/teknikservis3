@@ -59,18 +59,12 @@ export default function RegisterPage() {
         throw new Error(data.error || 'Kayıt işlemi başarısız oldu.');
       }
       
-      setMessage({ type: 'success', text: 'Kayıt başarılı! Email adresinizi doğrulamak için emailinizi kontrol edin.' });
+      setMessage({ type: 'success', text: 'Kayıt başarılı! Şimdi giriş yapabilirsiniz.' });
       
-      // Email doğrulama gönder
-      try {
-        await fetch('/api/auth/verify-email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: formData.email })
-        });
-      } catch (error) {
-        console.error('Email doğrulama gönderilemedi:', error);
-      }
+      // 2 saniye sonra login sayfasına yönlendir
+      setTimeout(() => {
+        router.push('/login');
+      }, 2000);
 
     } catch (err) {
       setMessage({ type: 'error', text: err.message });

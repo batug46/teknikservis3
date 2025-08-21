@@ -1,8 +1,44 @@
 import { NextResponse } from 'next/server';
 import prisma from '../../../lib/prisma';
 import { verifyAuth } from '../../../lib/auth';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../../../lib/auth';
 import bcrypt from 'bcryptjs';
 
+// GET - Kullanıcı profil bilgilerini getir
+export async function GET() {
+  try {
+    const session = await getServerSession(authOptions);
+    
+    if (!session || !session.user) {
+      return NextResponse.json({ error: 'Yetkisiz erişim.' }, { status: 401 });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: parseInt(session.user.id) },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        address: true,
+        role: true,
+        createdAt: true
+      }
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'Kullanıcı bulunamadı.' }, { status: 404 });
+    }
+
+    return NextResponse.json(user);
+  } catch (error) {
+    console.error('Profile fetch error:', error);
+    return NextResponse.json({ error: 'Profil bilgileri alınamadı.' }, { status: 500 });
+  }
+}
+
+// PUT - Kullanıcı profil bilgilerini güncelle
 export async function PUT(request) {
   try {
     const userPayload = await verifyAuth(request);

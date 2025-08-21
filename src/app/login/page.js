@@ -26,7 +26,7 @@ export default function LoginPage() {
 
       if (result.error) {
         if (result.error === 'CredentialsSignin') {
-          throw new Error('E-posta doğrulanmamış veya bilgiler hatalı.');
+          throw new Error('Email veya şifre hatalı.');
         }
         throw new Error(result.error);
       }
@@ -87,23 +87,12 @@ export default function LoginPage() {
                   disabled={loading}
                 />
               </div>
-              <div className="mt-2 text-right">
-                <Link href="/forgot-password" className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 transition-all duration-150 ease-out will-change-transform hover:scale-105">
-                  Şifremi unuttum?
-                </Link>
-              </div>
+
             </div>
             
             {error && (
               <div className="bg-red-100 dark:bg-red-900/20 border border-red-400 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded relative" role="alert">
                 <span className="block sm:inline">{error}</span>
-                {error.includes('doğrulanmamış') && (
-                  <div className="mt-2">
-                    <Link href="/verify-email" className="text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 underline text-sm">
-                      Email doğrulama gönder
-                    </Link>
-                  </div>
-                )}
               </div>
             )}
 
