@@ -1,6 +1,6 @@
 import { withAuth } from 'next-auth/middleware';
 import { NextResponse } from 'next/server';
-import { authOptions } from './lib/auth';
+
 
 export default withAuth(
   function middleware(req) {
@@ -42,6 +42,7 @@ export default withAuth(
         return true;
       },
     },
+    secret: process.env.NEXTAUTH_SECRET || 'your-secret-key-123',
   }
 );
 

@@ -45,12 +45,19 @@ export const authOptions = {
             return null;
           }
 
+          // Email doğrulama kontrolü
+          if (!user.emailVerified) {
+            console.log('❌ Email not verified');
+            return null;
+          }
+
           console.log('✅ Auth success:', { id: user.id, email: user.email, role: user.role });
           return {
             id: user.id,
             email: user.email,
             name: user.name,
             role: user.role,
+            emailVerified: user.emailVerified,
           };
         } catch (error) {
           console.error('💥 Auth error:', error);
@@ -81,6 +88,7 @@ export const authOptions = {
         token.email = user.email;
         token.name = user.name;
         token.role = user.role;
+        token.emailVerified = user.emailVerified;
       }
       return token;
     },
@@ -90,6 +98,7 @@ export const authOptions = {
         session.user.email = token.email;
         session.user.name = token.name;
         session.user.role = token.role;
+        session.user.emailVerified = token.emailVerified;
       }
       return session;
     }

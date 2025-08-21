@@ -9,7 +9,7 @@ export async function PUT(request, { params }) {
     if (isNaN(id)) {
         return NextResponse.json({ error: 'Geçersiz kullanıcı ID.' }, { status: 400 });
     }
-    const { role } = await request.json();
+    const { role, emailVerified } = await request.json();
 
     if (!role || (role !== 'admin' && role !== 'user')) {
         return NextResponse.json({ error: 'Geçersiz rol.' }, { status: 400 });
@@ -28,9 +28,14 @@ export async function PUT(request, { params }) {
             return NextResponse.json({ error: 'Ana adminin rolü değiştirilemez.' }, { status: 403 });
         }
 
+        const updateData = { role };
+        if (emailVerified !== undefined) {
+            updateData.emailVerified = emailVerified;
+        }
+
         const updatedUser = await prisma.user.update({
             where: { id },
-            data: { role },
+            data: updateData,
         });
 
         return NextResponse.json(updatedUser);

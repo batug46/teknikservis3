@@ -25,6 +25,9 @@ export default function LoginPage() {
       });
 
       if (result.error) {
+        if (result.error === 'CredentialsSignin') {
+          throw new Error('E-posta doğrulanmamış veya bilgiler hatalı.');
+        }
         throw new Error(result.error);
       }
       
@@ -32,7 +35,7 @@ export default function LoginPage() {
       router.refresh();
 
     } catch (err) {
-      setError(err.message === 'CredentialsSignin' ? 'E-posta veya şifre hatalı.' : 'Bir hata oluştu. Lütfen tekrar deneyin.');
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -94,6 +97,13 @@ export default function LoginPage() {
             {error && (
               <div className="bg-red-100 dark:bg-red-900/20 border border-red-400 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded relative" role="alert">
                 <span className="block sm:inline">{error}</span>
+                {error.includes('doğrulanmamış') && (
+                  <div className="mt-2">
+                    <Link href="/verify-email" className="text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 underline text-sm">
+                      Email doğrulama gönder
+                    </Link>
+                  </div>
+                )}
               </div>
             )}
 
