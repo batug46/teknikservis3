@@ -30,6 +30,9 @@ export default function AdminLoginPage() {
         throw new Error(result.error);
       }
       
+      // Session kurulması için kısa bekle
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       // Kullanıcı bilgilerini kontrol et
       const userResponse = await fetch('/api/test-session');
       const userData = await userResponse.json();
