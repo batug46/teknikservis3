@@ -33,6 +33,7 @@ export default function Navbar() {
     };
 
     handleStorageChange();
+    
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('scroll', handleScroll);
 

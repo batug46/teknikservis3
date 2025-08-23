@@ -1,35 +1,48 @@
 'use client';
 
 import { useState } from 'react';
+import { signIn, signOut } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
+    
     try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      if (data.user?.role !== 'admin') throw new Error('Bu panele sadece adminler giriş yapabilir.');
+
+      if (result.error) {
+        if (result.error === 'CredentialsSignin') {
+          throw new Error('Email veya şifre hatalı.');
+        }
+        throw new Error(result.error);
+      }
       
-      // Kullanıcı bilgisini tarayıcıya kaydet
-      localStorage.setItem('user', JSON.stringify(data.user));
-      // Navbar'ı güncellemesi için haber ver
-      window.dispatchEvent(new Event('authChange'));
+      // Kullanıcı bilgilerini kontrol et
+      const userResponse = await fetch('/api/test-session');
+      const userData = await userResponse.json();
+      
+      if (!userData.user || userData.user.role !== 'admin') {
+        await signOut({ redirect: false });
+        throw new Error('Bu panele sadece adminler giriş yapabilir.');
+      }
       
       // Admin paneline yönlendir
-      window.location.href = '/admin';
-
+      router.push('/admin');
+      router.refresh();
+      
     } catch (err) {
       setError(err.message);
     } finally {
