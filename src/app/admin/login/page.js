@@ -40,8 +40,7 @@ export default function AdminLoginPage() {
       }
       
       // Admin paneline yönlendir
-      router.push('/admin');
-      router.refresh();
+      window.location.href = '/admin';
       
     } catch (err) {
       setError(err.message);
