@@ -65,17 +65,8 @@ export const authOptions = {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30 gün
   },
-  cookies: {
-    sessionToken: {
-      name: 'next-auth.session-token',
-      options: {
-        httpOnly: false,  // Test için false
-        sameSite: 'lax',
-        path: '/',
-        secure: false
-      }
-    }
-  },
+  useSecureCookies: false,  // HTTP için güvenli olmayan cookie'ler
+  cookies: undefined,  // Varsayılan cookie ayarlarını kullan
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
