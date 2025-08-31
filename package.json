@@ -6,6 +6,8 @@
     "dev": "next dev",
     "build": "prisma generate && next build",
     "build:prod": "prisma generate && prisma db push && next build",
+    "build:vercel": "prisma generate && prisma db push && next build",
+    "vercel-build": "prisma generate && prisma db push && next build",
     "start": "next start",
     "lint": "next lint",
     "deploy": "chmod +x scripts/deploy.sh && scripts/deploy.sh"

@@ -17,6 +17,9 @@ const nextConfig = {
     maxInactiveAge: 10 * 1000,
     pagesBufferLength: 2,
   },
+  experimental: {
+    serverComponentsExternalPackages: ['@prisma/client'],
+  },
   async headers() {
     return [
       {
@@ -24,7 +27,9 @@ const nextConfig = {
         headers: [
           {
             key: 'Access-Control-Allow-Origin',
-            value: 'https://tekniverse.xyz',
+            value: process.env.NODE_ENV === 'production' 
+              ? 'https://your-domain.vercel.app' 
+              : 'http://localhost:3000',
           },
           {
             key: 'Access-Control-Allow-Methods',

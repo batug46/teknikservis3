@@ -13,8 +13,7 @@ export default withAuth(
     if (origin) {
       const allowedOrigins = [
         'http://localhost:3000',
-        'https://tekniverse.xyz',
-        'http://tekniverse.xyz'
+        process.env.NEXTAUTH_URL || 'https://your-domain.vercel.app'
       ];
       
       if (allowedOrigins.includes(origin)) {
@@ -60,7 +59,7 @@ export default withAuth(
         return true;
       },
     },
-    secret: process.env.NEXTAUTH_SECRET || 'your-secret-key-123',
+    secret: process.env.NEXTAUTH_SECRET,
   }
 );
 

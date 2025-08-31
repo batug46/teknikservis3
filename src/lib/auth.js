@@ -65,8 +65,18 @@ export const authOptions = {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30 gün
   },
-  useSecureCookies: false,  // HTTP için güvenli olmayan cookie'ler
-  cookies: undefined,  // Varsayılan cookie ayarlarını kullan
+  useSecureCookies: process.env.NODE_ENV === 'production',  // Production'da güvenli cookie'ler
+  cookies: process.env.NODE_ENV === 'production' ? {
+    sessionToken: {
+      name: `__Secure-next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: true
+      }
+    }
+  } : undefined,
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
@@ -90,6 +100,6 @@ export const authOptions = {
   pages: {
     signIn: '/login',
   },
-  secret: process.env.NEXTAUTH_SECRET || 'your-secret-key-123',
-  debug: true,
+  secret: process.env.NEXTAUTH_SECRET,
+  debug: process.env.NODE_ENV === 'development',
 };
